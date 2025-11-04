@@ -1,7 +1,8 @@
 #include "render.h"
 
-Render::Render(World& world, std::vector<Point>& points, std::vector<Stick>& sticks):
+Render::Render(World& world, Cloth& cloth, std::vector<Point>& points, std::vector<Stick>& sticks):
         world(world),
+        cloth(cloth),
         points(points),
         sticks(sticks) {
 
@@ -11,34 +12,34 @@ Render::~Render() {
 
 }
 
-float Render::normalize_position(float position, int cellLength, int scrLength) {
+float Render::normalize_position(float position, int particleLen, int scrLength) {
 
-    return 2.0f * (position ) * (cellLength / (float)scrLength); 
+    return 2.0f * (position ) * (particleLen / (float)scrLength); 
 }
 
 void Render::update() {
     for (int i = 0; i < points.size(); i++) {
-        float xn = normalize_position(points[i].position.x, world.cellLength, world.scrWidth);
-        float yn = normalize_position(points[i].position.y, world.cellLength, world.scrHeight);
+        float xn = normalize_position(points[i].position.x, cloth.particleLen, world.scrWidth);
+        float yn = normalize_position(points[i].position.y, cloth.particleLen, world.scrHeight);
         render_point(points[i], xn, yn);
         //std::cout << points[i].position.x << ", " << points[i].position.y << std::endl;
     }
     int k = 0;
     int i = 0;
-    for(int y = 0; y < (world.stickBaseLen*world.stickBaseLen); y += world.stickBaseLen) {
-        for (int x = y; x < (y +world.stickBaseLen)-1; x++) {
+    for(int y = 0; y < (cloth.clothPtDimension*cloth.clothPtDimension); y += cloth.clothPtDimension) {
+        for (int x = y; x < (y +cloth.clothPtDimension)-1; x++) {
             //Horizontal sticks    
-            float xnStartPt = normalize_position(points[x].position.x, world.cellLength, world.scrWidth);
-            float ynStartPt = normalize_position(points[x].position.y, world.cellLength, world.scrHeight);
-            float xnEndPt = normalize_position(points[x+1].position.x, world.cellLength, world.scrWidth);
-            float ynEndPt = normalize_position(points[x+1].position.y, world.cellLength, world.scrHeight);
+            float xnStartPt = normalize_position(points[x].position.x, cloth.particleLen, world.scrWidth);
+            float ynStartPt = normalize_position(points[x].position.y, cloth.particleLen, world.scrHeight);
+            float xnEndPt = normalize_position(points[x+1].position.x, cloth.particleLen, world.scrWidth);
+            float ynEndPt = normalize_position(points[x+1].position.y, cloth.particleLen, world.scrHeight);
             render_stick(sticks[i], xnStartPt, ynStartPt, xnEndPt, ynEndPt);
 
             //Vertical sticks
-            float xnStart = normalize_position(points[i].position.x, world.cellLength, world.scrWidth);
-            float ynStart = normalize_position(points[i].position.y, world.cellLength, world.scrHeight);
-            float xnEnd = normalize_position(points[i+world.stickBaseLen].position.x, world.cellLength, world.scrWidth);
-            float ynEnd = normalize_position(points[i+world.stickBaseLen].position.y, world.cellLength, world.scrHeight);
+            float xnStart = normalize_position(points[i].position.x, cloth.particleLen, world.scrWidth);
+            float ynStart = normalize_position(points[i].position.y, cloth.particleLen, world.scrHeight);
+            float xnEnd = normalize_position(points[i+cloth.clothPtDimension].position.x, cloth.particleLen, world.scrWidth);
+            float ynEnd = normalize_position(points[i+cloth.clothPtDimension].position.y, cloth.particleLen, world.scrHeight);
             render_stick(sticks[i], xnStart, ynStart, xnEnd, ynEnd);
             k += 1;
             

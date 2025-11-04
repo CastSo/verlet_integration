@@ -5,7 +5,7 @@
 
 class Render {
     public:
-        Render(World& world, std::vector<Point>& points, std::vector<Stick>& sticks); 
+        Render(World& world,  Cloth& cloth, std::vector<Point>& points, std::vector<Stick>& sticks); 
         ~Render();
         void update();
 
@@ -13,6 +13,7 @@ class Render {
         World& world;
         std::vector<Point>& points;
         std::vector<Stick>& sticks;
+        Cloth& cloth;
         int pointCount;
         void render_point(Point point, float xn, float yn);
         void render_stick(Stick stick, float xnStart, float ynStart, float xnEnd, float ynEnd);

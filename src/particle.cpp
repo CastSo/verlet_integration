@@ -1,7 +1,8 @@
 #include "./particle.h"
 
-Particle::Particle(World& world, std::vector<Point>& points, std::vector<Stick>& sticks):
+Particle::Particle(World& world, Cloth& cloth, std::vector<Point>& points, std::vector<Stick>& sticks):
         world(world),
+        cloth(cloth),
         points(points),
         sticks(sticks) {
 
@@ -11,34 +12,32 @@ Particle::~Particle() {
 
 }
 
-float Particle::normalize_position(float position, int cellLength, int scrLength) {
+float Particle::normalize_position(float position, int particleLen, int scrLength) {
 
-    return 2.0f * (position ) * (cellLength / (float)scrLength); 
+    return 2.0f * (position ) * (particleLen / (float)scrLength); 
 }
 
 void Particle::update(float deltaTime) {
 
-    for(int i = 0; i < points.size(); i++) {
 
+    for(int i = 0; i < points.size()-cloth.clothPtDimension; i++) {
+        if(points[i].isPinned){
+            continue;
+        }
         process_verlet(deltaTime, points[i]);
-        
-    }
-
-    for(int i = 0; i < points.size(); i++) {
-
         clamp_particles(points[i]);
     }
 
-    for (int y = 0; y < points.size(); y += world.stickBaseLen){
+    for (int y = 0; y < points.size()-cloth.clothPtDimension; y += cloth.clothPtDimension){
         
-        for (int x = y; x < y+world.stickBaseLen; x++)
+        for (int x = y; x < y+cloth.clothPtDimension; x++)
         {
 
             Point& p1 = points[x];
-            Point&  p2 = points[x+world.stickBaseLen];
+            Point&  p2 = points[x+cloth.clothPtDimension];
             satisfy_constraints(p1, p2);
 
-            if(x < y + world.stickBaseLen-1){
+            if(x < y + cloth.clothPtDimension-1){
 
                 Point& p1 = points[x];
                 Point& p2 = points[x+1];
@@ -54,14 +53,11 @@ void Particle::update(float deltaTime) {
 }
 
 void Particle::clamp_particles(Point& point) {
-        float xmin = point.constraint.x-world.stickBaseLen;
-        float xmax = point.constraint.x+world.stickBaseLen;
-        float ymin = point.constraint.y-world.stickBaseLen;
-        float ymax = point.constraint.y+world.stickBaseLen;
-        // float xmin = 0;
-        // float xmax = world.stickBaseLen*6;
-        // float ymin = 0;
-        // float ymax = world.stickBaseLen*6;
+        float xmin = point.constraint.x-cloth.stickBaseLen;
+        float xmax = point.constraint.x+cloth.stickBaseLen;
+        float ymin = point.constraint.y-cloth.stickBaseLen;
+        float ymax = point.constraint.y+cloth.stickBaseLen;
+
         if (point.position.y <= ymin) {
             point.position.y = ymin;
         
@@ -89,7 +85,7 @@ void Particle::clamp_particles(Point& point) {
 void Particle::satisfy_constraints(Point& p1, Point& p2) {
 
         
-        float restLength = world.stickBaseLen;
+        float restLength = cloth.stickBaseLen;
         //float restLength = 0.1f;
         glm::vec3 delta = p2.position - p1.position; 
         float deltaLength = glm::length(delta);
@@ -105,8 +101,17 @@ void Particle::satisfy_constraints(Point& p1, Point& p2) {
 
         float diff = (restLength - deltaLength) /  ((deltaLength)*(invmass1+invmass2));  
 
-        p1.position -= invmass1 * delta * diff;
-        p2.position += invmass2 * delta * diff;
+        if(!p1.isPinned)
+        {    
+            p1.position -= invmass1 * delta * diff;
+        }
+        if(!p2.isPinned)
+        {
+            p2.position += invmass2 * delta * diff;
+        }
+
+        // p1.position -= invmass1 * delta * diff;
+        // p2.position += invmass2 * delta * diff;
 }
 
 void Particle::process_verlet(float deltaTime, Point& point) {

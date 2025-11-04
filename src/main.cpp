@@ -16,6 +16,45 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
+void change_point_location(Cloth& cloth, int x, int y, std::vector<Point>& points) {
+
+    for (int i = 0; i < points.size(); i++) {
+        points[i].constraint.x += x;
+
+        points[i].constraint.y += y;
+    }
+}
+
+void process_keys(GLFWwindow *window, Cloth& cloth, Factory* factory, std::vector<Point>& points)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){   
+        glfwSetWindowShouldClose(window, true);
+   }
+   if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+        points.clear();
+        factory->make_points();
+   }
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        change_point_location(cloth, 0, 10, points);
+   }
+   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        change_point_location(cloth, 0, -10, points);
+   }
+   if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        change_point_location(cloth,-10, 0, points);
+   }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        change_point_location(cloth, 10, 0, points);
+   }
+
+
+
+}
+
+
+
+
 void setup_glfw() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -53,20 +92,6 @@ void setup_glfw() {
 }
 
 
-void process_input(GLFWwindow *window, std::vector<Point>& points)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){   
-        glfwSetWindowShouldClose(window, true);
-   }
-
-}
-
-
-float normalize_position(int position, int cell_length, int scr_length) {
-
-    return 2.0f * (position + 0.5f) * (cell_length / (float)scr_length); 
-}
-
 int main() {
     setup_glfw();
 
@@ -74,20 +99,22 @@ int main() {
 
     
     World world;
+    Cloth cloth;
     std::vector<Point> points;
     std::vector<Stick> sticks;
 
 
     world.scrHeight = SCR_HEIGHT;
     world.scrWidth = SCR_WIDTH;
-    world.cellLength = 8;
-    world.stickBaseLen = 6;
+    cloth.particleLen = 2;
+    cloth.stickBaseLen = 8;
+    cloth.clothPtDimension = 20;
 
 
 
-    Factory* factory = new Factory(world, points, sticks);
-    Render* render = new Render(world, points, sticks);
-    Particle* particle = new Particle(world, points, sticks);
+    Factory* factory = new Factory(world, cloth, points, sticks);
+    Render* render = new Render(world, cloth, points, sticks);
+    Particle* particle = new Particle(world, cloth, points, sticks);
 
     factory->make_points();
     factory->make_sticks();
@@ -102,7 +129,7 @@ int main() {
         deltaTime = currentFrame - lastFrame;
         lastFrame= currentFrame;
 
-        process_input(window, points);
+        process_keys(window, cloth, factory, points);
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

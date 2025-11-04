@@ -5,7 +5,7 @@
 
 class Factory {
     public:
-        Factory(World& world, std::vector<Point>& points, std::vector<Stick>& sticks);
+        Factory(World& world, Cloth& cloth, std::vector<Point>& points, std::vector<Stick>& sticks);
         ~Factory();
         void make_points();
         void make_sticks();
@@ -14,6 +14,7 @@ class Factory {
         int pointLength;
         int betweenDistance;
         World& world;
+        Cloth& cloth;
         std::vector<Point>& points;
         std::vector<Stick>& sticks;
 

@@ -1,7 +1,8 @@
 #include "factory.h"
 
-Factory::Factory(World& world, std::vector<Point>& points, std::vector<Stick>& sticks):
+Factory::Factory(World& world, Cloth& cloth, std::vector<Point>& points, std::vector<Stick>& sticks):
         world(world),
+        cloth(cloth),
         points(points),
         sticks(sticks) {
         betweenDistance = 6;
@@ -12,44 +13,56 @@ Factory::~Factory() {
 
 }
 
-float Factory::normalize_position(float position, int cellLength, int scrLength) {
+float Factory::normalize_position(float position, int particleLen, int scrLength) {
 
-    return 2.0f * (position ) * (cellLength / (float)scrLength); 
+    return 2.0f * (position ) * (particleLen / (float)scrLength); 
 }
 
 void Factory::make_points() {
     Mesh pointMesh = make_point_instance();
     Point point;
     point.mesh = pointMesh;
-    point.height = 8.0f / world.scrHeight;
-    point.width = 8.0f / world.scrWidth;
+    point.height = cloth.particleLen/ world.scrHeight;
+    point.width = cloth.particleLen / world.scrWidth;
     point.mass = 10000;
 
-    for(int y = 0; y < world.stickBaseLen; y++)
+    int xoffset = -60;
+    int yoffset = -60;
+   
+    for(int y = 0; y < cloth.clothPtDimension; y++)
     {
 
-        point.position.y = y*betweenDistance;
-        point.constraint.y = y*betweenDistance;
-        for(int x = 0; x < world.stickBaseLen; x++)
+        point.position.y = (y*cloth.stickBaseLen)+yoffset;
+        point.constraint.y = (y*cloth.stickBaseLen)+yoffset;
+        for(int x = 0; x < cloth.clothPtDimension; x++)
         {
-
-            point.position.x = x*betweenDistance;
-            point.constraint.x = x*betweenDistance;
+            point.position.x = (x*cloth.stickBaseLen)+xoffset;
+            point.constraint.x = (x*cloth.stickBaseLen)+xoffset;
             points.push_back(point);
 
         }
         
     }
 
+    points[cloth.clothPtDimension*cloth.clothPtDimension-1].height = 6.0f / world.scrHeight;
+    points[cloth.clothPtDimension*cloth.clothPtDimension-1].width = 6.0f / world.scrWidth;
+    points[(cloth.clothPtDimension*cloth.clothPtDimension)-cloth.clothPtDimension].height = 6.0f / world.scrHeight;
+    points[(cloth.clothPtDimension*cloth.clothPtDimension)-cloth.clothPtDimension].width = 6.0f / world.scrWidth;
+
+    points[cloth.clothPtDimension*cloth.clothPtDimension-1].position += 5.0f;
+    points[cloth.clothPtDimension*cloth.clothPtDimension-1].isPinned = true;
+    points[(cloth.clothPtDimension*cloth.clothPtDimension)-cloth.clothPtDimension].position.x -= 5.0f;
+    points[(cloth.clothPtDimension*cloth.clothPtDimension)-cloth.clothPtDimension].position.y += 5.0f;
+    points[(cloth.clothPtDimension*cloth.clothPtDimension)-cloth.clothPtDimension].isPinned = true;
 
 }
 
 void Factory::make_sticks() {
     Stick stick;
     int k = 0;
-    for(int y = 0; y < (world.stickBaseLen*world.stickBaseLen); y += world.stickBaseLen) { 
+    for(int y = 0; y < (cloth.clothPtDimension*cloth.clothPtDimension); y += cloth.clothPtDimension) { 
         //k = 0;
-        for (int x = y; x < (y +world.stickBaseLen)-1; x++) {
+        for (int x = y; x < (y +cloth.clothPtDimension)-1; x++) {
             stick.mesh = make_stick_instance();
             sticks.push_back(stick);
             

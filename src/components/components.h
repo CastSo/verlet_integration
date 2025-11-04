@@ -21,6 +21,7 @@ struct Point {
     glm::vec3 velocity;
     float mass;
     float timeStep;
+    bool isPinned;
 
 
 };
@@ -36,7 +37,14 @@ struct Stick {
 struct World {
     unsigned int scrWidth;
     unsigned int scrHeight;
-    int cellLength;
-    int stickBaseLen;
 
+
+};
+
+struct Cloth {
+    int particleLen;
+    int stickBaseLen;
+    int clothPtDimension;
+    int leftPin;
+    int rightPin;
 };

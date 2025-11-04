@@ -4,13 +4,14 @@
 
 class Particle {
     public:
-        Particle(World& world, std::vector<Point>& points, std::vector<Stick>& sticks);
+        Particle(World& world,  Cloth& cloth, std::vector<Point>& points, std::vector<Stick>& sticks);
         ~Particle();
         void update(float deltaTime);
         
 
     private:
         World& world;
+        Cloth& cloth;
         std::vector<Point>& points;
         std::vector<Stick>& sticks;
         
