@@ -81,7 +81,7 @@ int main() {
     world.scrHeight = SCR_HEIGHT;
     world.scrWidth = SCR_WIDTH;
     world.cellLength = 8;
-    world.pointLength = 6;
+    world.stickBaseLen = 6;
 
 
 
@@ -108,10 +108,12 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
+
+
         render->update();
+  
         particle->update(deltaTime);
 
-        
 
         glfwSwapBuffers(window);
         glfwPollEvents();

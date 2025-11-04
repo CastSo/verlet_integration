@@ -23,6 +23,6 @@ class Factory {
         unsigned int make_transform_buffer();
         unsigned int make_color_buffer();
         Mesh make_point_instance();
-        Mesh make_stick_instance(float xStartPoint, float yStartPoint, float xEndPoint, float yEndPoint);
+        Mesh make_stick_instance();
 
 };

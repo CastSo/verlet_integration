@@ -25,18 +25,21 @@ void Factory::make_points() {
     point.width = 8.0f / world.scrWidth;
     point.mass = 10000;
 
-    for(int y = 0; y < world.pointLength; y++)
+    for(int y = 0; y < world.stickBaseLen; y++)
     {
-        point.position.y = normalize_position(y*betweenDistance, world.cellLength, world.scrHeight);
-        for(int x = 0; x < world.pointLength; x++)
+
+        point.position.y = y*betweenDistance;
+        point.constraint.y = y*betweenDistance;
+        for(int x = 0; x < world.stickBaseLen; x++)
         {
-            point.position.x = normalize_position(x*betweenDistance, world.cellLength, world.scrWidth);
+
+            point.position.x = x*betweenDistance;
+            point.constraint.x = x*betweenDistance;
             points.push_back(point);
+
         }
         
-        
     }
-
 
 
 }
@@ -44,20 +47,13 @@ void Factory::make_points() {
 void Factory::make_sticks() {
     Stick stick;
     int k = 0;
-    for(int y = 0; y < (world.pointLength*world.pointLength); y += world.pointLength) { 
+    for(int y = 0; y < (world.stickBaseLen*world.stickBaseLen); y += world.stickBaseLen) { 
         //k = 0;
-        for (int x = y; x < (y +world.pointLength); x++) {
-            stick.mesh = make_stick_instance(points[y].position.x, points[y].position.y, points[x].position.x, points[x].position.y);
+        for (int x = y; x < (y +world.stickBaseLen)-1; x++) {
+            stick.mesh = make_stick_instance();
             sticks.push_back(stick);
             
-            if(x != y +world.pointLength-1)
-            {    
-                stick.mesh = make_stick_instance(points[k].position.x, points[k].position.y, 
-                    points[(k+world.pointLength)].position.x, points[k+world.pointLength].position.y);
-                sticks.push_back(stick);
-                k += 1;
-            }
-            
+
             
         }
 
@@ -126,11 +122,11 @@ Mesh Factory::make_point_instance() {
 
 
 
-Mesh Factory::make_stick_instance(float xStartPoint, float yStartPoint, float xEndPoint, float yEndPoint) {
+Mesh Factory::make_stick_instance() {
     unsigned int VAO, VBO, colorVBO;
     std::vector<float> vertices = {
-        xStartPoint,  yStartPoint,   0.0f,
-        xEndPoint,  yEndPoint,   0.0f, 
+        0.0f,  0.0f,   0.0f,
+        0.0f,  0.0f,   0.0f, 
     };
 
     std::vector<float> colors = {

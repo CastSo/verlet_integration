@@ -16,6 +16,7 @@ class Particle {
         
         float normalize_position(float position, int cell_length, int scr_length);
         void process_verlet(float deltaTime, Point& point);
-        void update_sticks();
+        void clamp_particles(Point& point);
+        void satisfy_constraints(Point& p1, Point& p2);
 
 };

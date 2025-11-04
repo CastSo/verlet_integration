@@ -15,6 +15,7 @@ struct Point {
     float width;
     float height;
     glm::vec3 position;
+    glm::vec3 constraint;
     glm::vec3 prevPosition;
     glm::vec3 acceleration;
     glm::vec3 velocity;
@@ -36,6 +37,6 @@ struct World {
     unsigned int scrWidth;
     unsigned int scrHeight;
     int cellLength;
-    int pointLength;
+    int stickBaseLen;
 
 };

@@ -14,8 +14,8 @@ class Render {
         std::vector<Point>& points;
         std::vector<Stick>& sticks;
         int pointCount;
-        void render_point(Point point);
-        void render_stick(Stick stick);
-        float normalize_position(int position, int cell_length, int scr_length);
+        void render_point(Point point, float xn, float yn);
+        void render_stick(Stick stick, float xnStart, float ynStart, float xnEnd, float ynEnd);
+        float normalize_position(float position, int cell_length, int scr_length);
 
 };
