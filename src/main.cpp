@@ -17,10 +17,13 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 void change_point_location(Cloth& cloth, int x, int y, std::vector<Point>& points) {
+    points[cloth.leftPin].position.x += x;
+    points[cloth.leftPin].position.y += y;
 
+    points[cloth.rightPin].position.x += x;
+    points[cloth.rightPin].position.y += y;
     for (int i = 0; i < points.size(); i++) {
         points[i].constraint.x += x;
-
         points[i].constraint.y += y;
     }
 }
@@ -35,17 +38,19 @@ void process_keys(GLFWwindow *window, Cloth& cloth, Factory* factory, std::vecto
         factory->make_points();
    }
 
+   int move = 6;
+
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        change_point_location(cloth, 0, 10, points);
+        change_point_location(cloth, 0, move, points);
    }
    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        change_point_location(cloth, 0, -10, points);
+        change_point_location(cloth, 0, -move, points);
    }
    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        change_point_location(cloth,-10, 0, points);
+        change_point_location(cloth,-move, 0, points);
    }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        change_point_location(cloth, 10, 0, points);
+        change_point_location(cloth, move, 0, points);
    }
 
 
@@ -95,30 +100,32 @@ void setup_glfw() {
 int main() {
     setup_glfw();
 
-    glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_DEPTH_TEST);
 
     
     World world;
     Cloth cloth;
     std::vector<Point> points;
     std::vector<Stick> sticks;
+    std::vector<Quad> quads;
 
 
     world.scrHeight = SCR_HEIGHT;
     world.scrWidth = SCR_WIDTH;
-    cloth.particleLen = 2;
-    cloth.stickBaseLen = 8;
-    cloth.clothPtDimension = 20;
+    cloth.particleLen = 4;
+    cloth.stickBaseLen = 6;
+    cloth.clothPtDimension = 4;
 
 
 
-    Factory* factory = new Factory(world, cloth, points, sticks);
-    Render* render = new Render(world, cloth, points, sticks);
+    Factory* factory = new Factory(world, cloth, points, sticks, quads);
+    Render* render = new Render(world, cloth, points, sticks, quads);
     Particle* particle = new Particle(world, cloth, points, sticks);
 
     factory->make_points();
     factory->make_sticks();
-    //std::cout << sticks.size() << std::endl;
+    factory->make_quads();
+    //std::cout << quads.mesh.VAO << std::endl;
 
     float lastFrame = glfwGetTime();
     float currentFrame;

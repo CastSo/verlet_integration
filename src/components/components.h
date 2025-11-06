@@ -34,6 +34,10 @@ struct Stick {
     float rotation;
 };
 
+struct Quad {
+    Mesh mesh;
+};
+
 struct World {
     unsigned int scrWidth;
     unsigned int scrHeight;

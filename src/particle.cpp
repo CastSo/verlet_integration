@@ -20,7 +20,7 @@ float Particle::normalize_position(float position, int particleLen, int scrLengt
 void Particle::update(float deltaTime) {
 
 
-    for(int i = 0; i < points.size()-cloth.clothPtDimension; i++) {
+    for(int i = 0; i < points.size(); i++) {
         if(points[i].isPinned){
             continue;
         }

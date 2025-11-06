@@ -5,10 +5,11 @@
 
 class Factory {
     public:
-        Factory(World& world, Cloth& cloth, std::vector<Point>& points, std::vector<Stick>& sticks);
+        Factory(World& world, Cloth& cloth, std::vector<Point>& points, std::vector<Stick>& sticks, std::vector<Quad>& quads);
         ~Factory();
         void make_points();
         void make_sticks();
+        void make_quads();
 
     private:
         int pointLength;
@@ -17,7 +18,7 @@ class Factory {
         Cloth& cloth;
         std::vector<Point>& points;
         std::vector<Stick>& sticks;
-
+        std::vector<Quad>& quads;
 
         float normalize_position(float position, int cellLength, int scrLength);
 
@@ -25,5 +26,7 @@ class Factory {
         unsigned int make_color_buffer();
         Mesh make_point_instance();
         Mesh make_stick_instance();
+        Mesh make_quad_instance(std::vector<float> vertices);
+
 
 };
