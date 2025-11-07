@@ -5,6 +5,7 @@ struct Mesh {
 
     unsigned int VAO, VBO, EBO;
     unsigned int colorVBO;
+    unsigned int normalVBO;
     unsigned int shader;
 
 };
@@ -36,13 +37,12 @@ struct Stick {
 
 struct Quad {
     Mesh mesh;
+
 };
 
 struct World {
     unsigned int scrWidth;
     unsigned int scrHeight;
-
-
 };
 
 struct Cloth {
@@ -51,4 +51,8 @@ struct Cloth {
     int clothPtDimension;
     int leftPin;
     int rightPin;
+};
+
+struct Light {
+    Mesh mesh;
 };

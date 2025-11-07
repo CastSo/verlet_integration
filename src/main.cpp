@@ -100,7 +100,7 @@ void setup_glfw() {
 int main() {
     setup_glfw();
 
-    //glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
     
     World world;
@@ -108,23 +108,25 @@ int main() {
     std::vector<Point> points;
     std::vector<Stick> sticks;
     std::vector<Quad> quads;
+    std::vector<Light> lights;
 
 
     world.scrHeight = SCR_HEIGHT;
     world.scrWidth = SCR_WIDTH;
     cloth.particleLen = 4;
     cloth.stickBaseLen = 6;
-    cloth.clothPtDimension = 4;
+    cloth.clothPtDimension = 10;
 
 
 
-    Factory* factory = new Factory(world, cloth, points, sticks, quads);
-    Render* render = new Render(world, cloth, points, sticks, quads);
+    Factory* factory = new Factory(world, cloth, points, sticks, quads,lights);
+    Render* render = new Render(world, cloth, points, sticks, quads,lights);
     Particle* particle = new Particle(world, cloth, points, sticks);
 
     factory->make_points();
     factory->make_sticks();
     factory->make_quads();
+    factory->make_lights();
     //std::cout << quads.mesh.VAO << std::endl;
 
     float lastFrame = glfwGetTime();

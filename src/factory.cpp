@@ -1,11 +1,13 @@
 #include "factory.h"
 
-Factory::Factory(World& world, Cloth& cloth, std::vector<Point>& points, std::vector<Stick>& sticks, std::vector<Quad>& quads):
+Factory::Factory(World& world, Cloth& cloth, std::vector<Point>& points, 
+            std::vector<Stick>& sticks, std::vector<Quad>& quads, std::vector<Light>& lights):
         world(world),
         cloth(cloth),
         points(points),
         sticks(sticks),
-        quads(quads) {
+        quads(quads),
+        lights(lights) {
         betweenDistance = 6;
 }
 
@@ -77,6 +79,12 @@ void Factory::make_sticks() {
         
     }
 
+}
+
+void Factory::make_lights() {
+    Light light;
+    light.mesh = make_light_instance();
+    lights.push_back(light);
 }
 
 void Factory::make_quads() {
@@ -175,24 +183,135 @@ Mesh Factory::make_point_instance() {
 }
 
 Mesh Factory::make_quad_instance(std::vector<float> vertices) {
-    unsigned int VBO, VAO, EBO;
-    
+    unsigned int VBO, VAO, normalVBO, EBO;
+    std::vector<float> normals;
 
+    for (int i = 0; i < vertices.size(); i += 9) {
+        glm::vec3 v1 = {vertices[i], vertices[i+1], vertices[i+2]};
+        glm::vec3 v2 = {vertices[i+3], vertices[i+4], vertices[i+5]};
+        glm::vec3 v3 = {vertices[i+6], vertices[i+7], vertices[i+8]};
+
+        glm::vec3 edge1 = v2 - v1;
+        glm::vec3 edge2 = v3 - v1;
+
+        glm::vec3 normal = glm::cross(edge1, edge2);
+        normal = glm::normalize(normal);
+        
+        v1 += normal;
+        v2 += normal;
+        v3 += normal;
+
+        normals.push_back(v1.x);
+        normals.push_back(v1.y);
+        normals.push_back(v1.z);
+        normals.push_back(v2.x);
+        normals.push_back(v2.y);
+        normals.push_back(v2.z);
+        normals.push_back(v3.x);
+        normals.push_back(v3.y);
+        normals.push_back(v3.z);
+    }
 
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
+    glGenBuffers(1, &normalVBO);
 
     glBindVertexArray(VAO);
 
+    //position attribute
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-
-    //position attribute
+    
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    
 
+    //normal attribute
+    glBindBuffer(GL_ARRAY_BUFFER, normalVBO);
+    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), normals.data(), GL_STATIC_DRAW);
+   
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);    
 
+    unsigned int shader = make_shader(
+        "../src/view/light_shader.vert",
+        "../src/view/light_shader.frag"
+    );
+
+   // std::cout << vertices.size() << std::endl;
+
+    Mesh mesh;
+    mesh.VAO = VAO;
+    mesh.VBO = VBO;
+    mesh.normalVBO = normalVBO;
+    mesh.shader = shader;
+
+    return mesh;
+}
+
+Mesh Factory::make_light_instance() {
+    unsigned int VAO, VBO;
+    float vertices[] = {
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+    };
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    
+    glBindVertexArray(VAO);
+
+    //position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    
+    // normal attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    
     unsigned int shader = make_shader(
         "../src/view/shader.vert",
         "../src/view/shader.frag"
@@ -202,7 +321,6 @@ Mesh Factory::make_quad_instance(std::vector<float> vertices) {
     mesh.VAO = VAO;
     mesh.VBO = VBO;
     mesh.shader = shader;
-
     return mesh;
 }
 
@@ -253,3 +371,4 @@ Mesh Factory::make_stick_instance() {
 
     return mesh;
 }
+
