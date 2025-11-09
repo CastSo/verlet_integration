@@ -27,22 +27,22 @@ void Factory::make_points() {
     point.mesh = pointMesh;
     point.height = cloth.particleLen/ world.scrHeight;
     point.width = cloth.particleLen / world.scrWidth;
-    point.mass = 10000;
+    point.mass = 100000;
 
-    int xoffset = -60;
-    int yoffset = -60;
+    int xoffset = 0;
+    int yoffset = 20;
     int i = 0;
-    for(int y = 0; y < cloth.clothPtDimension; y++)
+    for(int y = 0; y < cloth.clothPtHeight; y++)
     {
 
         point.position.y = (y*cloth.stickBaseLen)+yoffset;
         point.constraint.y = (y*cloth.stickBaseLen)+yoffset;
-        for(int x = 0; x < cloth.clothPtDimension; x++)
+        for(int x = 0; x < cloth.clothPtWidth; x++)
         {
             point.position.x = (x*cloth.stickBaseLen)+xoffset;
             point.constraint.x = (x*cloth.stickBaseLen)+xoffset;
             points.push_back(point);
-            //std::cout << "i: " << points[i].position.x << ", " << points[i].position.y << ", " << points[i].position.z << std::endl;
+
             i++;
 
         }
@@ -51,20 +51,20 @@ void Factory::make_points() {
 
     //std::cout << points.size() << std::endl;
 
-    points[cloth.clothPtDimension*cloth.clothPtDimension-1].height = 6.0f / world.scrHeight;
-    points[cloth.clothPtDimension*cloth.clothPtDimension-1].width = 6.0f / world.scrWidth;
-    points[(cloth.clothPtDimension*cloth.clothPtDimension)-cloth.clothPtDimension].height = 6.0f / world.scrHeight;
-    points[(cloth.clothPtDimension*cloth.clothPtDimension)-cloth.clothPtDimension].width = 6.0f / world.scrWidth;
+    points[cloth.clothPtHeight*cloth.clothPtWidth-1].height = 6.0f / world.scrHeight;
+    points[cloth.clothPtHeight*cloth.clothPtWidth-1].width = 6.0f / world.scrWidth;
+    points[(cloth.clothPtHeight*cloth.clothPtWidth)-cloth.clothPtWidth].height = 6.0f / world.scrHeight;
+    points[(cloth.clothPtHeight*cloth.clothPtWidth)-cloth.clothPtWidth].width = 6.0f / world.scrWidth;
 
-    points[cloth.clothPtDimension*cloth.clothPtDimension-1].position.x += 5.0f;
-    points[cloth.clothPtDimension*cloth.clothPtDimension-1].position.y += 5.0f;
-    points[cloth.clothPtDimension*cloth.clothPtDimension-1].isPinned = true;
-    points[(cloth.clothPtDimension*cloth.clothPtDimension)-cloth.clothPtDimension].position.x += 5.0f;
-    points[(cloth.clothPtDimension*cloth.clothPtDimension)-cloth.clothPtDimension].position.y += 5.0f;
-    points[(cloth.clothPtDimension*cloth.clothPtDimension)-cloth.clothPtDimension].isPinned = true;
+    points[cloth.clothPtHeight*cloth.clothPtWidth-1].position.x += 5.0f;
+    points[cloth.clothPtHeight*cloth.clothPtWidth-1].position.y += 5.0f;
+    points[cloth.clothPtHeight*cloth.clothPtWidth-1].isPinned = true;
+    points[(cloth.clothPtHeight*cloth.clothPtWidth)-cloth.clothPtWidth].position.x += 5.0f;
+    points[(cloth.clothPtHeight*cloth.clothPtWidth)-cloth.clothPtWidth].position.y += 5.0f;
+    points[(cloth.clothPtHeight*cloth.clothPtWidth)-cloth.clothPtWidth].isPinned = true;
 
-    cloth.leftPin = cloth.clothPtDimension*cloth.clothPtDimension-1;
-    cloth.rightPin = (cloth.clothPtDimension*cloth.clothPtDimension)-cloth.clothPtDimension;
+    cloth.leftPin = cloth.clothPtHeight*cloth.clothPtWidth-1;
+    cloth.rightPin = (cloth.clothPtHeight*cloth.clothPtWidth)-cloth.clothPtWidth;
 
 }
 
@@ -89,23 +89,23 @@ void Factory::make_lights() {
 
 void Factory::make_quads() {
 
-    int quadCount = (cloth.clothPtDimension)*(cloth.clothPtDimension)-cloth.clothPtDimension;
+    int quadCount = ((cloth.clothPtHeight)*(cloth.clothPtWidth))-cloth.clothPtWidth;
 
-    for (int i = 0; i < quadCount; i += cloth.clothPtDimension) {
+    for (int i = 0; i < quadCount; i += cloth.clothPtWidth) {
         std::vector<float> vertices;
-        for (int j = i; j < i+cloth.clothPtDimension-1; j++)
+        for (int j = i; j < i+cloth.clothPtWidth-1; j++)
         {   
             
-            vertices.push_back(normalize_position(points[j+cloth.clothPtDimension].position.x, cloth.particleLen, world.scrWidth));
-            vertices.push_back(normalize_position(points[j+cloth.clothPtDimension].position.y, cloth.particleLen, world.scrHeight));
+            vertices.push_back(normalize_position(points[j+cloth.clothPtWidth].position.x, cloth.particleLen, world.scrWidth));
+            vertices.push_back(normalize_position(points[j+cloth.clothPtWidth].position.y, cloth.particleLen, world.scrHeight));
             vertices.push_back(0.0f);
 
             vertices.push_back(normalize_position(points[j].position.x, cloth.particleLen, world.scrWidth));
             vertices.push_back(normalize_position(points[j].position.y, cloth.particleLen, world.scrHeight));
             vertices.push_back(0.0f);
 
-            vertices.push_back(normalize_position(points[j+cloth.clothPtDimension+1].position.x, cloth.particleLen, world.scrWidth));
-            vertices.push_back(normalize_position(points[j+cloth.clothPtDimension+1].position.y, cloth.particleLen, world.scrHeight));
+            vertices.push_back(normalize_position(points[j+cloth.clothPtWidth+1].position.x, cloth.particleLen, world.scrWidth));
+            vertices.push_back(normalize_position(points[j+cloth.clothPtWidth+1].position.y, cloth.particleLen, world.scrHeight));
             vertices.push_back(0.0f);
 
             vertices.push_back(normalize_position(points[j+1].position.x, cloth.particleLen, world.scrWidth));
@@ -186,7 +186,8 @@ Mesh Factory::make_quad_instance(std::vector<float> vertices) {
     unsigned int VBO, VAO, normalVBO, EBO;
     std::vector<float> normals;
 
-    for (int i = 0; i < vertices.size(); i += 9) {
+    int pointCount = vertices.size()-(vertices.size() % 9);
+    for (int i = 0; i < pointCount; i += 9) {
         glm::vec3 v1 = {vertices[i], vertices[i+1], vertices[i+2]};
         glm::vec3 v2 = {vertices[i+3], vertices[i+4], vertices[i+5]};
         glm::vec3 v3 = {vertices[i+6], vertices[i+7], vertices[i+8]};

@@ -5,7 +5,7 @@
 
 class Render {
     public:
-        Render(World& world,  Cloth& cloth, std::vector<Point>& points, 
+        Render(World& world,  Cloth& cloth, Camera& camera, std::vector<Point>& points, 
             std::vector<Stick>& sticks, std::vector<Quad>& quads, std::vector<Light>& lights); 
         ~Render();
         void update();
@@ -13,12 +13,18 @@ class Render {
     private:
         World& world;
         Cloth& cloth;
+        Camera& camera;
         std::vector<Point>& points;
         std::vector<Stick>& sticks;
         std::vector<Quad>& quads;
         std::vector<Light>& lights;
 
         glm::vec3 lightPos;
+        
+
+        void update_points();
+        void update_sticks();
+        void update_quads();
 
         void render_point(Point point, float xn, float yn);
         void render_stick(Stick stick, float xnStart, float ynStart, float xnEnd, float ynEnd);

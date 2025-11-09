@@ -48,9 +48,16 @@ struct World {
 struct Cloth {
     int particleLen;
     int stickBaseLen;
-    int clothPtDimension;
+    int clothPtWidth;
+    int clothPtHeight;
     int leftPin;
     int rightPin;
+};
+
+struct Camera {
+    glm::vec3 position;
+    glm::vec3 up;
+    glm::vec3 forwards;
 };
 
 struct Light {

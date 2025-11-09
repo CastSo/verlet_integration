@@ -28,16 +28,16 @@ void Particle::update(float deltaTime) {
         clamp_particles(points[i]);
     }
 
-    for (int y = 0; y < points.size()-cloth.clothPtDimension; y += cloth.clothPtDimension){
+    for (int y = 0; y < points.size()-cloth.clothPtWidth; y += cloth.clothPtWidth){
         
-        for (int x = y; x < y+cloth.clothPtDimension; x++)
+        for (int x = y; x < y+cloth.clothPtWidth; x++)
         {
 
             Point& p1 = points[x];
-            Point&  p2 = points[x+cloth.clothPtDimension];
+            Point&  p2 = points[x+cloth.clothPtWidth];
             satisfy_constraints(p1, p2);
 
-            if(x < y + cloth.clothPtDimension-1){
+            if(x < y + cloth.clothPtWidth-1){
 
                 Point& p1 = points[x];
                 Point& p2 = points[x+1];
