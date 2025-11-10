@@ -12,9 +12,9 @@ Particle::~Particle() {
 
 }
 
-float Particle::normalize_position(float position, int particleLen, int scrLength) {
+float Particle::normalize_position(float position, int particleScale, int scrLength) {
 
-    return 2.0f * (position ) * (particleLen / (float)scrLength); 
+    return 2.0f * (position ) * (particleScale / (float)scrLength); 
 }
 
 void Particle::update(float deltaTime) {
@@ -80,6 +80,11 @@ void Particle::clamp_particles(Point& point) {
             
         }
 
+
+        // if(point.position.y  <= -(world.scrHeight/cloth.particleScale)){
+        //     point.position.y = -(world.scrHeight/cloth.particleScale);
+        // }
+
 }
 
 void Particle::satisfy_constraints(Point& p1, Point& p2) {
@@ -134,7 +139,9 @@ void Particle::process_verlet(float deltaTime, Point& point) {
     point.prevPosition.x = prevPos.x;
     point.prevPosition.y = prevPos.y;
     
+    // if(ypos < (cloth.particleScale/world.scrHeight)+cloth.particleScale){
+    //     point.position.y = (cloth.particleScale/world.scrHeight);
+    // }
 
-   
 }
 

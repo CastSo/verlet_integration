@@ -5,15 +5,14 @@
 
 class Render {
     public:
-        Render(World& world,  Cloth& cloth, Camera& camera, std::vector<Point>& points, 
+        Render(World& world,  Cloth& cloth, std::vector<Point>& points, 
             std::vector<Stick>& sticks, std::vector<Quad>& quads, std::vector<Light>& lights); 
         ~Render();
-        void update();
+        void update(bool showPoints, bool showSticks);
 
     private:
         World& world;
         Cloth& cloth;
-        Camera& camera;
         std::vector<Point>& points;
         std::vector<Stick>& sticks;
         std::vector<Quad>& quads;

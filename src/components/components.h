@@ -15,6 +15,7 @@ struct Point {
     Mesh mesh;
     float width;
     float height;
+    float scale;
     glm::vec3 position;
     glm::vec3 constraint;
     glm::vec3 prevPosition;
@@ -46,7 +47,7 @@ struct World {
 };
 
 struct Cloth {
-    int particleLen;
+    int particleScale;
     int stickBaseLen;
     int clothPtWidth;
     int clothPtHeight;

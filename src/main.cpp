@@ -2,6 +2,7 @@
 #include "./factory.h"
 #include "./render.h"
 #include "./particle.h"
+#include "./gui.h"
 
 #include "./components/components.h"
 
@@ -11,12 +12,7 @@ Camera camera;
 const unsigned int SCR_WIDTH = 1024;
 const unsigned int SCR_HEIGHT = 768;
 
-bool firstMouse = true;
-float yaw   = -90.0f;	 
-float pitch =  0.0f;
-float lastX =  800.0f / 2.0;
-float lastY =  600.0 / 2.0;
-float fov   =  45.0f;
+
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
@@ -50,31 +46,19 @@ void process_keys(GLFWwindow *window, Cloth& cloth,  Camera& camera, float delta
 
     int move = 6;
 
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         change_point_location(cloth, 0, move, points);
    }
-   if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         change_point_location(cloth, 0, -move, points);
    }
-   if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+   if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         change_point_location(cloth,-move, 0, points);
    }
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         change_point_location(cloth, move, 0, points);
    }
-   float cameraSpeed = static_cast<float>(2.0 * deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        camera.position += cameraSpeed * camera.forwards;
-   }
-   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        camera.position -= cameraSpeed * camera.forwards;
-   }
-   if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        camera.position -= glm::normalize(glm::cross(camera.forwards, camera.up)*cameraSpeed);
-   }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        camera.position += glm::normalize(glm::cross(camera.forwards, camera.up)*cameraSpeed);
-   }
+
 
 
 
@@ -104,15 +88,12 @@ void setup_glfw() {
         glfwTerminate();
         //return -1;
     }
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);  
+
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     
-    glfwSetCursorPosCallback(window, mouse_callback);
-     // tell GLFW to capture our mouse
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    // glfwSetMouseButtonCallback(window, process_mouse);
+   
 
     // glad: load all OpenGL function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -123,44 +104,22 @@ void setup_glfw() {
 
 }
 
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
-    float xpos = static_cast<float>(xposIn);
-    float ypos = static_cast<float>(yposIn);
+void setup_imgui(){
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
 
-    if (firstMouse) {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
 
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
-    lastX = xpos;
-    lastY = ypos;
-
-    float sensitivity = 0.1f;
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
-
-    yaw += xoffset;
-    pitch += yoffset;
-
-    if (pitch > 89.0f)
-        pitch = 89.0f;
-    if (pitch < -89.0f)
-        pitch = -89.0f;
-
-    glm::vec3 front;
-    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    front.y = sin(glm::radians(pitch));
-    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    camera.forwards = glm::normalize(front);
-    
+    ImGui_ImplGlfw_InitForOpenGL(window, true);         
+    ImGui_ImplOpenGL3_Init("#version 400");
 }
 
 
 int main() {
     setup_glfw();
+    setup_imgui();
 
     glEnable(GL_DEPTH_TEST);
 
@@ -181,16 +140,17 @@ int main() {
 
     world.scrHeight = SCR_HEIGHT;
     world.scrWidth = SCR_WIDTH;
-    cloth.particleLen = 4;
+    cloth.particleScale = 4;
     cloth.stickBaseLen = 6;
-    cloth.clothPtWidth = 20;
+    cloth.clothPtWidth = 10;
     cloth.clothPtHeight = 10;
 
 
 
     Factory* factory = new Factory(world, cloth, points, sticks, quads,lights);
-    Render* render = new Render(world, cloth, camera, points, sticks, quads,lights);
+    Render* render = new Render(world, cloth, points, sticks, quads,lights);
     Particle* particle = new Particle(world, cloth, points, sticks);
+    Gui* gui = new Gui(world, cloth, points, sticks, quads,lights);
 
     factory->make_points();
     factory->make_sticks();
@@ -212,13 +172,10 @@ int main() {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-
-
-        render->update();
-  
+        render->update(gui->get_show_points(), gui->get_show_sticks());
         particle->update(deltaTime);
-
+        
+        gui->update();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -227,6 +184,7 @@ int main() {
     delete factory;
     delete render;
     delete particle;
+    delete gui;
     glfwTerminate();
     return 0;
 

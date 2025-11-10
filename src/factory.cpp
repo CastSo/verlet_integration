@@ -8,7 +8,7 @@ Factory::Factory(World& world, Cloth& cloth, std::vector<Point>& points,
         sticks(sticks),
         quads(quads),
         lights(lights) {
-        betweenDistance = 6;
+
 }
 
 
@@ -16,21 +16,22 @@ Factory::~Factory() {
 
 }
 
-float Factory::normalize_position(float position, int particleLen, int scrLength) {
+float Factory::normalize_position(float position, int particleScale, int scrLength) {
 
-    return 2.0f * (position ) * (particleLen / (float)scrLength); 
+    return 2.0f * (position ) * (particleScale / (float)scrLength); 
 }
 
 void Factory::make_points() {
     Mesh pointMesh = make_point_instance();
     Point point;
     point.mesh = pointMesh;
-    point.height = cloth.particleLen/ world.scrHeight;
-    point.width = cloth.particleLen / world.scrWidth;
+    point.scale = 8;
+    point.height = point.scale/ world.scrHeight;
+    point.width = point.scale / world.scrWidth;
     point.mass = 100000;
 
     int xoffset = 0;
-    int yoffset = 20;
+    int yoffset = -20;
     int i = 0;
     for(int y = 0; y < cloth.clothPtHeight; y++)
     {
@@ -42,9 +43,6 @@ void Factory::make_points() {
             point.position.x = (x*cloth.stickBaseLen)+xoffset;
             point.constraint.x = (x*cloth.stickBaseLen)+xoffset;
             points.push_back(point);
-
-            i++;
-
         }
 
     }
@@ -96,20 +94,20 @@ void Factory::make_quads() {
         for (int j = i; j < i+cloth.clothPtWidth-1; j++)
         {   
             
-            vertices.push_back(normalize_position(points[j+cloth.clothPtWidth].position.x, cloth.particleLen, world.scrWidth));
-            vertices.push_back(normalize_position(points[j+cloth.clothPtWidth].position.y, cloth.particleLen, world.scrHeight));
+            vertices.push_back(normalize_position(points[j+cloth.clothPtWidth].position.x, cloth.particleScale, world.scrWidth));
+            vertices.push_back(normalize_position(points[j+cloth.clothPtWidth].position.y, cloth.particleScale, world.scrHeight));
             vertices.push_back(0.0f);
 
-            vertices.push_back(normalize_position(points[j].position.x, cloth.particleLen, world.scrWidth));
-            vertices.push_back(normalize_position(points[j].position.y, cloth.particleLen, world.scrHeight));
+            vertices.push_back(normalize_position(points[j].position.x, cloth.particleScale, world.scrWidth));
+            vertices.push_back(normalize_position(points[j].position.y, cloth.particleScale, world.scrHeight));
             vertices.push_back(0.0f);
 
-            vertices.push_back(normalize_position(points[j+cloth.clothPtWidth+1].position.x, cloth.particleLen, world.scrWidth));
-            vertices.push_back(normalize_position(points[j+cloth.clothPtWidth+1].position.y, cloth.particleLen, world.scrHeight));
+            vertices.push_back(normalize_position(points[j+cloth.clothPtWidth+1].position.x, cloth.particleScale, world.scrWidth));
+            vertices.push_back(normalize_position(points[j+cloth.clothPtWidth+1].position.y, cloth.particleScale, world.scrHeight));
             vertices.push_back(0.0f);
 
-            vertices.push_back(normalize_position(points[j+1].position.x, cloth.particleLen, world.scrWidth));
-            vertices.push_back(normalize_position(points[j+1].position.y, cloth.particleLen, world.scrHeight));
+            vertices.push_back(normalize_position(points[j+1].position.x, cloth.particleScale, world.scrWidth));
+            vertices.push_back(normalize_position(points[j+1].position.y, cloth.particleScale, world.scrHeight));
             vertices.push_back(0.0f);
 
 
