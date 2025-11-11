@@ -8,8 +8,9 @@ Gui::Gui(World& world, Cloth& cloth, std::vector<Point>& points,
         sticks(sticks),
         quads(quads),
         lights(lights) {
-        showPoints = false;
-        showSticks = false;
+        showPoints = true;
+        showSticks = true;
+        clearCloth = false;
 }
 
 Gui::~Gui(){
@@ -25,6 +26,7 @@ void Gui::update(){
     
     ImGui::Checkbox("Show points", &showPoints);
     ImGui::Checkbox("Show sticks", &showSticks);
+    ImGui::Checkbox("Clear cloth", &clearCloth);
 
     ImGui::End();
         
@@ -38,4 +40,8 @@ bool Gui::get_show_points() {
 
 bool Gui::get_show_sticks() {
     return showSticks;
+}
+
+bool Gui::get_clear_cloth() {
+    return clearCloth;
 }

@@ -12,9 +12,12 @@ Camera camera;
 const unsigned int SCR_WIDTH = 1024;
 const unsigned int SCR_HEIGHT = 768;
 
+float xclicked = 0;
+float yclicked = 0;
 
+bool isClicked;
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void mouse_callback(GLFWwindow* window,int button, int action, int mods);
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -47,10 +50,10 @@ void process_keys(GLFWwindow *window, Cloth& cloth,  Camera& camera, float delta
     int move = 6;
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        change_point_location(cloth, 0, move, points);
+        change_point_location(cloth, 0, -move, points);
    }
    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        change_point_location(cloth, 0, -move, points);
+        change_point_location(cloth, 0, move, points);
    }
    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         change_point_location(cloth,-move, 0, points);
@@ -59,12 +62,15 @@ void process_keys(GLFWwindow *window, Cloth& cloth,  Camera& camera, float delta
         change_point_location(cloth, move, 0, points);
    }
 
-
-
-
 }
 
+void mouse_callback(GLFWwindow* window, int button, int action, int mods){
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        
+        isClicked = true;
 
+    }
+}
 
 
 void setup_glfw() {
@@ -92,7 +98,7 @@ void setup_glfw() {
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    
+    glfwSetMouseButtonCallback(window, mouse_callback);
    
 
     // glad: load all OpenGL function pointers
@@ -132,6 +138,9 @@ int main() {
     std::vector<Quad> quads;
     std::vector<Light> lights;
 
+    std::vector<Point> balls;
+
+
 
     camera.position = glm::vec3(0.0f, 1.0f, 1.0f);
     camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -143,19 +152,17 @@ int main() {
     cloth.particleScale = 4;
     cloth.stickBaseLen = 6;
     cloth.clothPtWidth = 10;
-    cloth.clothPtHeight = 10;
+    cloth.clothPtHeight = 20;
 
 
 
-    Factory* factory = new Factory(world, cloth, points, sticks, quads,lights);
-    Render* render = new Render(world, cloth, points, sticks, quads,lights);
-    Particle* particle = new Particle(world, cloth, points, sticks);
+    Factory* factory = new Factory(world, cloth, points, sticks, quads, lights, balls);
+    Render* render = new Render(world, cloth, points, sticks, quads, lights, balls);
+    Particle* particle = new Particle(world, cloth, points, balls);
     Gui* gui = new Gui(world, cloth, points, sticks, quads,lights);
 
-    factory->make_points();
-    factory->make_sticks();
-    factory->make_quads();
-    factory->make_lights();
+    factory->make_cloth();
+    factory->make_ball(0.0f, 0.0f);
     //std::cout << quads.mesh.VAO << std::endl;
 
     float lastFrame = glfwGetTime();
@@ -163,6 +170,19 @@ int main() {
     float deltaTime;
     while(!glfwWindowShouldClose(window))
     {
+        double xCursorPos, yCursorPos;
+        glfwGetCursorPos(window, &xCursorPos, &yCursorPos);
+
+        balls[0].position.x = (double)xCursorPos;
+        balls[0].position.y = (double)yCursorPos;
+        //std::cout << balls[0].position.x << ", " << balls[0].position.y << std::endl;
+        //factory->make_ball((double)xCursorPos,  world.scrHeight-(double)yCursorPos);
+        if (isClicked){
+            factory->make_ball((double)xCursorPos,  (double)yCursorPos);
+            std::cout << (double)xCursorPos << ", " << (double)yCursorPos << std::endl;
+            isClicked = false;
+        }
+
         currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame= currentFrame;
@@ -171,6 +191,12 @@ int main() {
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if(gui->get_clear_cloth()){
+            points.clear();
+            sticks.clear();
+            quads.clear();
+        }
 
         render->update(gui->get_show_points(), gui->get_show_sticks());
         particle->update(deltaTime);

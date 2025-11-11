@@ -1,10 +1,10 @@
 #include "./particle.h"
 
-Particle::Particle(World& world, Cloth& cloth, std::vector<Point>& points, std::vector<Stick>& sticks):
+Particle::Particle(World& world, Cloth& cloth, std::vector<Point>& points, std::vector<Point>& balls):
         world(world),
         cloth(cloth),
         points(points),
-        sticks(sticks) {
+        balls(balls) {
 
 }
 
@@ -12,20 +12,43 @@ Particle::~Particle() {
 
 }
 
-float Particle::normalize_position(float position, int particleScale, int scrLength) {
 
-    return 2.0f * (position ) * (particleScale / (float)scrLength); 
-}
 
 void Particle::update(float deltaTime) {
+    update_points(deltaTime);
+    update_balls(deltaTime);
+}
+
+void Particle::update_balls(float deltaTime) {
+    for (int i = 1; i < balls.size(); i++) {
+        
+        float yTmpPosition = balls[i].position.y;
+        balls[i].position.y = process_verlet(deltaTime, balls[i].position.y, balls[i].prevPosition.y, 0.5f, balls[i].mass);
+        balls[i].prevPosition.y = yTmpPosition;
+
+        
+        clamp_to_screen(balls[i]);
+    }
+}
+
+void Particle::update_points(float deltaTime) {
 
 
     for(int i = 0; i < points.size(); i++) {
         if(points[i].isPinned){
             continue;
         }
-        process_verlet(deltaTime, points[i]);
+
+        float xTmpPosition = points[i].position.x;
+        points[i].position.x = process_verlet(deltaTime, points[i].position.x, points[i].prevPosition.x, 0.0f, points[i].mass);
+        points[i].prevPosition.x = xTmpPosition;
+
+        float yTmpPosition = points[i].position.y;
+        points[i].position.y = process_verlet(deltaTime, points[i].position.y, points[i].prevPosition.y, 0.5f, points[i].mass);
+        points[i].prevPosition.y = yTmpPosition;
+
         clamp_particles(points[i]);
+
     }
 
     for (int y = 0; y < points.size()-cloth.clothPtWidth; y += cloth.clothPtWidth){
@@ -46,9 +69,6 @@ void Particle::update(float deltaTime) {
 
         }
     }
-
-
-
 
 }
 
@@ -80,12 +100,38 @@ void Particle::clamp_particles(Point& point) {
             
         }
 
-
-        // if(point.position.y  <= -(world.scrHeight/cloth.particleScale)){
-        //     point.position.y = -(world.scrHeight/cloth.particleScale);
-        // }
-
 }
+
+void Particle::clamp_to_screen(Point& point) {
+    float xmin = 10;
+    float xmax = world.scrWidth-10;
+    float ymin = 10;
+    float ymax = world.scrHeight-10;
+
+    if (point.position.y <= ymin) {
+        point.position.y = ymin;
+    
+    }
+
+    if (point.position.y >= ymax) {
+        point.position.y = ymax;
+        
+
+    }
+
+    if (point.position.x <= xmin) {
+        point.position.x = xmin;
+        
+
+    }
+
+    if (point.position.x >= xmax) {
+        point.position.x = xmax;
+        
+    }
+}
+
+
 
 void Particle::satisfy_constraints(Point& p1, Point& p2) {
 
@@ -114,34 +160,19 @@ void Particle::satisfy_constraints(Point& p1, Point& p2) {
         {
             p2.position += invmass2 * delta * diff;
         }
-
-        // p1.position -= invmass1 * delta * diff;
-        // p2.position += invmass2 * delta * diff;
 }
 
-void Particle::process_verlet(float deltaTime, Point& point) {
+float Particle::process_verlet(float deltaTime, float position, float prevPosition, float force, float mass) {
     
 
-    glm::vec2 force = {0.0f, 0.5f};
+    float acceleration = force/mass;
 
-    glm::vec2 acceleration = {force.x/point.mass, force.y/point.mass};
-
-    glm::vec2 prevPos = {point.position.x, point.position.y};
-
-    float xpos = (2*point.position.x) - point.prevPosition.x + acceleration.x * (deltaTime * deltaTime);
+    float newPosition = (2*position) - prevPosition + acceleration * (deltaTime * deltaTime);
     
-    float ypos = (2*point.position.y) - point.prevPosition.y + acceleration.y * (deltaTime * deltaTime);
 
-    point.position.x = xpos;
-    point.position.y = ypos;
+    return newPosition;
 
-
-    point.prevPosition.x = prevPos.x;
-    point.prevPosition.y = prevPos.y;
-    
-    // if(ypos < (cloth.particleScale/world.scrHeight)+cloth.particleScale){
-    //     point.position.y = (cloth.particleScale/world.scrHeight);
-    // }
+   
 
 }
 
