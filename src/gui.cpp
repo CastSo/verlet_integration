@@ -10,7 +10,7 @@ Gui::Gui(World& world, Cloth& cloth, std::vector<Point>& points,
         lights(lights) {
         showPoints = true;
         showSticks = true;
-        clearCloth = false;
+        clearCloth = true;
 }
 
 Gui::~Gui(){

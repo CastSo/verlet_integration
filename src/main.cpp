@@ -16,12 +16,22 @@ float xclicked = 0;
 float yclicked = 0;
 
 bool isClicked;
+bool canAddBall = false;
+
+World world;
 
 void mouse_callback(GLFWwindow* window,int button, int action, int mods);
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    glViewport(0, 0, width, height);
+
+    if (width != world.scrWidth || height != world.scrHeight) {
+        world.scrWidth = width;
+        world.scrHeight = height;
+
+        glViewport(0, 0, width, height); 
+    }
+
 }
 
 void change_point_location(Cloth& cloth, int x, int y, std::vector<Point>& points) {
@@ -70,6 +80,10 @@ void mouse_callback(GLFWwindow* window, int button, int action, int mods){
         isClicked = true;
 
     }
+
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
+        canAddBall = !canAddBall;
+    }
 }
 
 
@@ -78,9 +92,7 @@ void setup_glfw() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    
-   // glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     #ifdef __APPLE__
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -131,7 +143,7 @@ int main() {
 
 
     
-    World world;
+    
     Cloth cloth;
     std::vector<Point> points;
     std::vector<Stick> sticks;
@@ -151,8 +163,8 @@ int main() {
     world.scrWidth = SCR_WIDTH;
     cloth.particleScale = 4;
     cloth.stickBaseLen = 6;
-    cloth.clothPtWidth = 10;
-    cloth.clothPtHeight = 20;
+    cloth.clothPtWidth = 20;
+    cloth.clothPtHeight = 10;
 
 
 
@@ -177,9 +189,8 @@ int main() {
         balls[0].position.y = (double)yCursorPos;
         //std::cout << balls[0].position.x << ", " << balls[0].position.y << std::endl;
         //factory->make_ball((double)xCursorPos,  world.scrHeight-(double)yCursorPos);
-        if (isClicked){
+        if (isClicked && canAddBall){
             factory->make_ball((double)xCursorPos,  (double)yCursorPos);
-            std::cout << (double)xCursorPos << ", " << (double)yCursorPos << std::endl;
             isClicked = false;
         }
 
@@ -192,13 +203,12 @@ int main() {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if(gui->get_clear_cloth()){
-            points.clear();
-            sticks.clear();
-            quads.clear();
-        }
 
-        render->update(gui->get_show_points(), gui->get_show_sticks());
+        if(!gui->get_clear_cloth()) {
+            render->update_cloth(gui->get_show_points(), gui->get_show_sticks());
+        }
+        render->update_balls(canAddBall);
+        
         particle->update(deltaTime);
         
         gui->update();

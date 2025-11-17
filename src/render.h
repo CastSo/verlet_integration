@@ -9,8 +9,8 @@ class Render {
             std::vector<Stick>& sticks, std::vector<Quad>& quads, std::vector<Light>& lights,
             std::vector<Point>& balls); 
         ~Render();
-        void update(bool showPoints, bool showSticks);
-
+        void update_cloth(bool showPoints, bool showSticks);
+        void update_balls(bool canAddBall);
     private:
         World& world;
         Cloth& cloth;
@@ -26,9 +26,9 @@ class Render {
         void update_points();
         void update_sticks();
         void update_quads();
-        void update_balls();
+        
 
-        void render_point(Point point, float xn, float yn);
+        void render_point(Point point, float xn, float yn, float zn);
         void render_stick(Stick stick, float xnStart, float ynStart, float xnEnd, float ynEnd);
         void render_quads(Quad& quad, std::vector<float> vertices);
         void render_light(Light light);

@@ -16,6 +16,7 @@ struct Point {
     float width;
     float height;
     float scale;
+    glm::vec3 force;
     glm::vec3 position;
     glm::vec3 constraint;
     glm::vec3 prevPosition;

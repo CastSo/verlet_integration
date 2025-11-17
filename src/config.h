@@ -24,6 +24,7 @@
 #include <time.h>
 #include <chrono>
 #include <thread>
+#include <cmath>
 
 #include <GL/glut.h>
 

@@ -36,13 +36,11 @@ void Factory::make_ball(float xpos, float ypos) {
     point.scale = 12;
     point.height = point.scale/ world.scrHeight;
     point.width = point.scale / world.scrWidth;
-    point.mass = 10000000;
+    point.mass = 100000;
+    point.force = {point.mass, point.mass, 0.0f};
 
     point.position.x = xpos;
     point.position.y = ypos;
-
-    point.constraint.x = xpos+50.0f;
-    point.constraint.y = ypos+50.0f;
 
     balls.push_back(point);
 }
@@ -55,6 +53,7 @@ void Factory::make_points() {
     point.height = point.scale/ world.scrHeight;
     point.width = point.scale / world.scrWidth;
     point.mass = 100000;
+    point.force = {0.0f, 0.5f, 0.0f};
 
     int xoffset = 0;
     int yoffset = 0;
@@ -73,18 +72,17 @@ void Factory::make_points() {
 
     }
 
-    //std::cout << points.size() << std::endl;
 
     points[cloth.clothPtWidth-1].height = 8.0f / world.scrHeight;
     points[cloth.clothPtWidth-1].width = 8.0f / world.scrWidth;
     points[0].height = 8.0f / world.scrHeight;
     points[0].width = 8.0f / world.scrWidth;
 
-    points[cloth.clothPtWidth-1].position.x += 8.0f;
-    points[cloth.clothPtWidth-1].position.y += 8.0f;
+    points[cloth.clothPtWidth-1].position.x += 10.0f;
+    points[cloth.clothPtWidth-1].position.y -= 10.0f;
     points[cloth.clothPtWidth-1].isPinned = true;
-    points[0].position.x += 8.0f;
-    points[0].position.y += 8.0f;
+    points[0].position.x -= 10.0f;
+    points[0].position.y -= 10.0f;
     points[0].isPinned = true;
 
     cloth.leftPin = cloth.clothPtWidth-1;
@@ -138,9 +136,6 @@ void Factory::make_quads() {
 
 
 
-            // std::cout << "j " << j << ": " << points[j].position.x << ", " << points[j].position.y << ", " << points[j].position.z << std::endl;
-
-            // std::cout << "j+row: "<< j+cloth.clothPtDimension << ": "  << points[j+cloth.clothPtDimension].position.x << ", " << points[j+cloth.clothPtDimension].position.y << ", " << points[j+cloth.clothPtDimension].position.z << std::endl;
         }
 
         Quad quad;
@@ -264,7 +259,6 @@ Mesh Factory::make_quad_instance(std::vector<float> vertices) {
         "../src/view/light_shader.frag"
     );
 
-   // std::cout << vertices.size() << std::endl;
 
     Mesh mesh;
     mesh.VAO = VAO;

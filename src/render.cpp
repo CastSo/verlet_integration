@@ -27,28 +27,30 @@ float Render::normalize_yposition(float position, int particleScale, int scrLeng
     return 1.0f - 2.0f * (position * particleScale / (float)scrLength); 
 }
 
-// float Render::normalize_cursor_position(float position)
-// {
-
-// }
-void Render::update(bool showPoints, bool showSticks) {
+void Render::update_cloth(bool showPoints, bool showSticks) {
     if(showPoints)
         update_points();
     if(showSticks)
         update_sticks();
     update_quads();
-    update_balls();
+    
 
 }
 
-void Render::update_balls() {
+void Render::update_balls(bool canAddBall) {
+    if(canAddBall) {
+        float xn = normalize_xposition(balls[0].position.x, 1, world.scrWidth);
+        float yn = normalize_yposition(balls[0].position.y, 1, world.scrHeight);
+        float zn = 0.0f;
+        render_point(balls[0], xn, yn, zn);
+    }
 
-    for(int i = 0; i < balls.size(); i++)
+    for(int i = 1; i < balls.size(); i++)
     {    
         float xn = normalize_xposition(balls[i].position.x, 1, world.scrWidth);
         float yn = normalize_yposition(balls[i].position.y, 1, world.scrHeight);
-
-        render_point(balls[i], xn, yn);
+        float zn = 0.0f;
+        render_point(balls[i], xn, yn, zn);
     }
 }
 
@@ -56,8 +58,9 @@ void Render::update_points(){
     for (int i = 0; i < points.size(); i++) {
             float xn = normalize_xposition(points[i].position.x, cloth.particleScale, world.scrWidth);
             float yn = normalize_yposition(points[i].position.y, cloth.particleScale, world.scrHeight);
-            render_point(points[i], xn, yn);
-            //std::cout << points[i].position.x << ", " << points[i].position.y << std::endl;
+            float zn = 0.0f;
+            render_point(points[i], xn, yn, zn);
+
         }
 }
 
@@ -126,15 +129,16 @@ void Render::update_quads(){
 }
 
 
-void Render::render_point(Point point, float xn, float yn) {
+void Render::render_point(Point point, float xn, float yn, float zn) {
     glUseProgram(point.mesh.shader);
 
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 view  = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(xn, yn, 0.0f));
+    model = glm::translate(model, glm::vec3(xn, yn, zn));
     model = glm::scale(model, glm::vec3(point.width, point.height, 1.0f));
 
-    glm::mat4 proj  = glm::ortho( -1.0f, 1.0f,   -1.0f, 1.0f,   -1.0f, 1.0f );
+    //glm::mat4 proj  = glm::ortho(0.0f, static_cast<float>(world.scrWidth), 0.0f, static_cast<float>(world.scrHeight), 0.1f, 100.0f);
+    glm::mat4 proj = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
 
     unsigned int modelLoc = glGetUniformLocation(point.mesh.shader, "model");
     unsigned int viewLoc = glGetUniformLocation(point.mesh.shader, "view");
@@ -194,7 +198,8 @@ void Render::render_quads(Quad& quad, std::vector<float> vertices) {
 
     glm::mat4 view  = glm::mat4(1.0f);
 
-    glm::mat4 proj  = glm::ortho( -1.0f, 1.0f,   -1.0f, 1.0f,   -1.0f, 1.0f );
+    // glm::mat4 proj  = glm::ortho( 0.0f, static_cast<float>(world.scrWidth), 0.0f, static_cast<float>(world.scrHeight));
+    glm::mat4 proj = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
 
     unsigned int lightColorLoc = glGetUniformLocation(quad.mesh.shader, "lightColor");
     unsigned int objColorLoc = glGetUniformLocation(quad.mesh.shader, "objectColor");
@@ -239,7 +244,8 @@ void Render::render_light(Light light) {
     glm::mat4 view  = glm::mat4(1.0f);
     
 
-    glm::mat4 proj  = glm::ortho( -1.0f, 1.0f,   -1.0f, 1.0f,   -1.0f, 1.0f );
+    //glm::mat4 proj  = glm::ortho( 0.0f, static_cast<float>(world.scrWidth), 0.0f, static_cast<float>(world.scrHeight));
+    glm::mat4 proj = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
 
     unsigned int modelLoc = glGetUniformLocation(light.mesh.shader, "model");
     unsigned int viewLoc = glGetUniformLocation(light.mesh.shader, "view");
@@ -262,7 +268,8 @@ void Render::render_stick(Stick stick, float xnStart, float ynStart, float xnEnd
     glUseProgram(stick.mesh.shader);
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 view  = glm::mat4(1.0f);
-    glm::mat4 proj  = glm::ortho( -1.0f, 1.0f,   -1.0f, 1.0f,   -1.0f, 1.0f );
+    //glm::mat4 proj  = glm::ortho( 0.0f, static_cast<float>(world.scrWidth), 0.0f, static_cast<float>(world.scrHeight) );
+    glm::mat4 proj = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
 
     unsigned int modelLoc = glGetUniformLocation(stick.mesh.shader, "model");
     unsigned int viewLoc = glGetUniformLocation(stick.mesh.shader, "view");
