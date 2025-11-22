@@ -6,12 +6,14 @@
 class Factory {
     public:
         Factory(World& world, Cloth& cloth, std::vector<Point>& points, std::vector<Stick>& sticks, 
-                std::vector<Quad>& quads, std::vector<Light>& lights, std::vector<Point>& balls);
+                std::vector<Quad>& quads, std::vector<Light>& lights, std::vector<Point>& balls,
+                std::vector<Stick>& springs);
         ~Factory();
         void make_cloth();
         void make_points();
 
-        void make_ball(float xpos, float ypos);
+        void make_ball_spring(float xpos, float ypos);
+        Point make_ball(float xpos, float ypos, int scale, int mass, glm::vec3 force);
 
     private:
         int pointLength;
@@ -23,6 +25,7 @@ class Factory {
         std::vector<Quad>& quads;
         std::vector<Light>& lights;
         std::vector<Point>& balls;
+        std::vector<Stick>& springs;
 
         float normalize_position(float position, int cellLength, int scrLength);
         

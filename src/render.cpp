@@ -2,14 +2,15 @@
 
 Render::Render(World& world, Cloth& cloth, std::vector<Point>& points, 
             std::vector<Stick>& sticks, std::vector<Quad>& quads, std::vector<Light>& lights,
-            std::vector<Point>& balls):
+            std::vector<Point>& balls, std::vector<Stick>& springs):
         world(world),
         cloth(cloth),
         points(points),
         sticks(sticks),
         quads(quads),
         lights(lights),
-        balls(balls) {
+        balls(balls),
+        springs(springs) {
         lightPos = glm::vec3(1.2f, 1.0f, 5.0f);
 }
 
@@ -37,8 +38,9 @@ void Render::update_cloth(bool showPoints, bool showSticks) {
 
 }
 
-void Render::update_balls(bool canAddBall) {
+void Render::update_balls_springs(bool canAddBall) {
     if(canAddBall) {
+        //First ball used as preview
         float xn = normalize_xposition(balls[0].position.x, 1, world.scrWidth);
         float yn = normalize_yposition(balls[0].position.y, 1, world.scrHeight);
         float zn = 0.0f;
@@ -52,6 +54,18 @@ void Render::update_balls(bool canAddBall) {
         float zn = 0.0f;
         render_point(balls[i], xn, yn, zn);
     }
+
+    for(int i = 0; i < springs.size(); i++) {
+        glm::vec3 posStart = balls[springs[i].ptStartIndex].position;
+        glm::vec3 posEnd = balls[springs[i].ptEndIndex].position;
+        float xnStartPt = normalize_xposition(posStart.x, 1, world.scrWidth);
+        float ynStartPt = normalize_yposition(posStart.y, 1, world.scrHeight);
+        float xnEndPt = normalize_xposition(posEnd.x, 1, world.scrWidth);
+        float ynEndPt = normalize_yposition(posEnd.y, 1, world.scrHeight);
+        
+        render_stick(springs[i], xnStartPt, ynStartPt, xnEndPt, ynEndPt);
+    }
+   // std::cout << springs.size() << std::endl;
 }
 
 void Render::update_points(){
@@ -76,6 +90,7 @@ void Render::update_sticks() {
             float xnEndPt = normalize_xposition(points[x+1].position.x, cloth.particleScale, world.scrWidth);
             float ynEndPt = normalize_yposition(points[x+1].position.y, cloth.particleScale, world.scrHeight);
             render_stick(sticks[i], xnStartPt, ynStartPt, xnEndPt, ynEndPt);
+            //std::cout << xnStartPt << ", " << ynEndPt << std::endl;
 
             if(i + cloth.clothPtWidth+1 > sticks.size()){
                 continue;
@@ -86,7 +101,7 @@ void Render::update_sticks() {
             float xnEnd = normalize_xposition(points[i+cloth.clothPtWidth].position.x, cloth.particleScale, world.scrWidth);
             float ynEnd = normalize_yposition(points[i+cloth.clothPtWidth].position.y, cloth.particleScale, world.scrHeight);
             render_stick(sticks[i], xnStart, ynStart, xnEnd, ynEnd);
-
+            
             
             i++;
         }

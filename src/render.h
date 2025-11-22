@@ -7,10 +7,10 @@ class Render {
     public:
         Render(World& world,  Cloth& cloth, std::vector<Point>& points, 
             std::vector<Stick>& sticks, std::vector<Quad>& quads, std::vector<Light>& lights,
-            std::vector<Point>& balls); 
+            std::vector<Point>& balls, std::vector<Stick>& springs); 
         ~Render();
         void update_cloth(bool showPoints, bool showSticks);
-        void update_balls(bool canAddBall);
+        void update_balls_springs(bool canAddBall);
     private:
         World& world;
         Cloth& cloth;
@@ -19,6 +19,7 @@ class Render {
         std::vector<Quad>& quads;
         std::vector<Light>& lights;
         std::vector<Point>& balls;
+        std::vector<Stick>& springs;
 
         glm::vec3 lightPos;
         

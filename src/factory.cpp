@@ -2,14 +2,15 @@
 
 Factory::Factory(World& world, Cloth& cloth, std::vector<Point>& points, 
             std::vector<Stick>& sticks, std::vector<Quad>& quads, std::vector<Light>& lights,
-            std::vector<Point>& balls):
+            std::vector<Point>& balls, std::vector<Stick>& springs):
         world(world),
         cloth(cloth),
         points(points),
         sticks(sticks),
         quads(quads),
         lights(lights),
-        balls(balls) {
+        balls(balls),
+        springs(springs) {
 
 }
 
@@ -27,22 +28,36 @@ void Factory::make_cloth() {
     
 }
 
-void Factory::make_ball(float xpos, float ypos) {
+Point Factory::make_ball(float xpos, float ypos, int scale, int mass, glm::vec3 force) {
+    Mesh ballMesh = make_point_instance();
+    Point ball;
+    ball.mesh = ballMesh;
+    ball.scale = scale;
+    ball.height = ball.scale/ world.scrHeight;
+    ball.width = ball.scale / world.scrWidth;
+    ball.mass = mass;
+    ball.force = {0.0f, mass, 0.0f};
 
+    ball.position.x = xpos;
+    ball.position.y = ypos;
+    
+    return ball;
+}
 
-    Mesh pointMesh = make_point_instance();
-    Point point;
-    point.mesh = pointMesh;
-    point.scale = 12;
-    point.height = point.scale/ world.scrHeight;
-    point.width = point.scale / world.scrWidth;
-    point.mass = 100000;
-    point.force = {point.mass, point.mass, 0.0f};
+void Factory::make_ball_spring(float xpos, float ypos) {
+    Stick spring; 
 
-    point.position.x = xpos;
-    point.position.y = ypos;
+    Point ball1 = make_ball(xpos, ypos, 8, 100000, {0.0f, 100000, 0.0f});
+    Point ball2 = make_ball(xpos+32.0f, ypos, 8, 100000, {0.0f, 100000, 0.0f});
+    
+    balls.push_back(ball1);
+    balls.push_back(ball2);
 
-    balls.push_back(point);
+    spring.ptStartIndex = balls.size()-1;
+    spring.ptEndIndex = balls.size()-2;
+    spring.mesh = make_stick_instance();
+    springs.push_back(spring);
+
 }
 
 void Factory::make_points() {

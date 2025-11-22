@@ -7,7 +7,7 @@
 #include "./components/components.h"
 
 GLFWwindow* window;
-Camera camera;
+
 
 const unsigned int SCR_WIDTH = 1024;
 const unsigned int SCR_HEIGHT = 768;
@@ -46,7 +46,7 @@ void change_point_location(Cloth& cloth, int x, int y, std::vector<Point>& point
     }
 }
 
-void process_keys(GLFWwindow *window, Cloth& cloth,  Camera& camera, float deltaTime,
+void process_keys(GLFWwindow *window, Cloth& cloth,  float deltaTime,
          Factory* factory, std::vector<Point>& points)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){   
@@ -149,14 +149,10 @@ int main() {
     std::vector<Stick> sticks;
     std::vector<Quad> quads;
     std::vector<Light> lights;
-
     std::vector<Point> balls;
+    std::vector<Stick> springs;
 
 
-
-    camera.position = glm::vec3(0.0f, 1.0f, 1.0f);
-    camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
-    camera.forwards = glm::vec3(0.0f, 0.0f, -1.0f);
 
 
     world.scrHeight = SCR_HEIGHT;
@@ -168,13 +164,13 @@ int main() {
 
 
 
-    Factory* factory = new Factory(world, cloth, points, sticks, quads, lights, balls);
-    Render* render = new Render(world, cloth, points, sticks, quads, lights, balls);
+    Factory* factory = new Factory(world, cloth, points, sticks, quads, lights, balls, springs);
+    Render* render = new Render(world, cloth, points, sticks, quads, lights, balls, springs);
     Particle* particle = new Particle(world, cloth, points, balls);
     Gui* gui = new Gui(world, cloth, points, sticks, quads,lights);
 
     factory->make_cloth();
-    factory->make_ball(0.0f, 0.0f);
+    balls.push_back(factory->make_ball(0.0f, 0.0f, 8, 100000, {0.0f, 0.5f, 0.0f}));
     //std::cout << quads.mesh.VAO << std::endl;
 
     float lastFrame = glfwGetTime();
@@ -190,7 +186,7 @@ int main() {
         //std::cout << balls[0].position.x << ", " << balls[0].position.y << std::endl;
         //factory->make_ball((double)xCursorPos,  world.scrHeight-(double)yCursorPos);
         if (isClicked && canAddBall){
-            factory->make_ball((double)xCursorPos,  (double)yCursorPos);
+            factory->make_ball_spring((double)xCursorPos, (double)yCursorPos);
             isClicked = false;
         }
 
@@ -198,7 +194,7 @@ int main() {
         deltaTime = currentFrame - lastFrame;
         lastFrame= currentFrame;
 
-        process_keys(window, cloth, camera, deltaTime, factory, points);
+        process_keys(window, cloth, deltaTime, factory, points);
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -207,7 +203,7 @@ int main() {
         if(!gui->get_clear_cloth()) {
             render->update_cloth(gui->get_show_points(), gui->get_show_sticks());
         }
-        render->update_balls(canAddBall);
+        render->update_balls_springs(canAddBall);
         
         particle->update(deltaTime);
         

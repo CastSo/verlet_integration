@@ -31,6 +31,10 @@ struct Point {
 
 struct Stick {
     Mesh mesh;
+    // Point *pointStart;
+    // Point *pointEnd;
+    int ptStartIndex;
+    int ptEndIndex;
     float length;
     glm::vec3 startPoint;
     glm::vec3 endPoint;

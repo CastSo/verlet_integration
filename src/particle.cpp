@@ -29,6 +29,7 @@ bool Particle::check_collision(Point p1, Point p2) {
 }
 
 void Particle::update_balls(float deltaTime) {
+    float xoffset = world.scrWidth/2;
     for (int i = 1; i < balls.size(); i++) {
         
         float yTmpPosition = balls[i].position.y;
@@ -38,22 +39,35 @@ void Particle::update_balls(float deltaTime) {
         float xTmpPosition = balls[i].position.x;
         balls[i].position.x = process_verlet(deltaTime, balls[i].position.x, balls[i].prevPosition.x, balls[i].force.x, balls[i].mass);
         balls[i].prevPosition.x = xTmpPosition;
+
         
         clamp_to_screen(balls[i], deltaTime);
     }
 
     int ballCount = balls.size();
     for (int i = 1; i < ballCount; i++) {
-        Point& p1 = balls[i];
-        for (int j = 1; j < ballCount; j++) {
+        Point& b1 = balls[i];
+        for (int j = i + 2; j < ballCount; j++) {
             if(i == j) {
                 continue;
             }
-            Point& p2 = balls[j];
-            if(check_collision(p1, p2)) {
-                satisfy_constraints(p1, p2, p1.scale);
+            Point& b2 = balls[j];
+            if(check_collision(b1, b2)) {
+                satisfy_constraints(b1, b2, (b1.scale));
             }
         }
+    }
+
+    for (int i = 1; i < balls.size()-1; i += 2){
+        Point& b1 = balls[i];
+        Point& b2 = balls[i+1];
+
+        b1.constraint = b1.position;
+        b2.constraint = b2.position;
+        
+        clamp_particles(b1, cloth.stickBaseLen, cloth.stickBaseLen);
+        clamp_particles(b2, cloth.stickBaseLen, cloth.stickBaseLen);
+        satisfy_constraints(b1, b2, 32.0f);
     }
 }
 
@@ -73,7 +87,7 @@ void Particle::update_points(float deltaTime) {
         points[i].position.y = process_verlet(deltaTime, points[i].position.y, points[i].prevPosition.y, points[i].force.y, points[i].mass);
         points[i].prevPosition.y = yTmpPosition;
 
-        clamp_particles(points[i]);
+        clamp_particles(points[i], cloth.stickBaseLen, cloth.stickBaseLen);
 
     }
 
@@ -87,22 +101,21 @@ void Particle::update_points(float deltaTime) {
             satisfy_constraints(p1, p2, cloth.stickBaseLen);
 
             if(x < y + cloth.clothPtWidth-1){
-                //Point from p1's right
                 Point& p1 = points[x];
+                //Point from p1's right
                 Point& p2 = points[x+1];
                 satisfy_constraints(p1, p2, cloth.stickBaseLen);
             }
 
         }
     }
-
 }
 
-void Particle::clamp_particles(Point& point) {
-        float xmin = point.constraint.x-cloth.stickBaseLen;
-        float xmax = point.constraint.x+cloth.stickBaseLen;
-        float ymin = point.constraint.y-cloth.stickBaseLen;
-        float ymax = point.constraint.y+cloth.stickBaseLen;
+void Particle::clamp_particles(Point& point, float xBaseLen, float yBaseLen) {
+        float xmin = point.position.x-xBaseLen;
+        float xmax = point.position.x+xBaseLen;
+        float ymin = point.position.y-yBaseLen;
+        float ymax = point.position.y+yBaseLen;
 
         if (point.position.y <= ymin) {
             point.position.y = ymin;
@@ -126,9 +139,9 @@ void Particle::clamp_particles(Point& point) {
 
 void Particle::clamp_to_screen(Point& point, float deltaTime) {
     float xmin = point.scale;
-    float xmax = world.scrWidth + point.scale;
+    float xmax = world.scrWidth - point.scale;
     float ymin = point.scale;
-    float ymax = world.scrHeight + point.scale;
+    float ymax = world.scrHeight - point.scale;
 
     if (point.position.y <= ymin) {
         point.position.y = ymin;
@@ -158,6 +171,7 @@ void Particle::clamp_to_screen(Point& point, float deltaTime) {
 void Particle::satisfy_constraints(Point& p1, Point& p2, float restLength) {
 
         glm::vec3 delta = p2.position - p1.position; 
+       // delta *= restLength*restLength / (delta * delta + restLength * restLength)-0.5f;
         float deltaLength = glm::length(delta);
 
 
@@ -185,4 +199,39 @@ float Particle::process_verlet(float deltaTime, float position, float prevPositi
 
 }
 
+void Particle::process_collision(Point p1, Point p2, float deltaTime) {
+    glm::vec3 delta = p2.position - p1.position;
+    float sumRadii = (p1.scale/2) + (p2.scale/2);
+    float distance = glm::length(delta);
+    int K = 10000;
+    if (distance < sumRadii) {
+        glm::vec3 force = K * (sumRadii - distance) * (delta / distance);
+        p1.velocity -= K * deltaTime / p1.mass;
+        p2.velocity += K * deltaTime / p2.mass;
+    }
 
+    if(!p1.isPinned)
+    {    
+        p1.position += p1.velocity * deltaTime;
+    }
+    if(!p2.isPinned)
+    {
+        p2.position += p1.velocity * deltaTime;
+    }
+}
+
+void Particle::process_force(Point p1, Point p2, float deltaTime){
+    glm::vec3 delta = p2.position - p1.position;
+    float distance = glm::length(delta);
+    glm::vec3 direction = delta / distance;
+    
+    float gravity = 6.67*pow(10, -11);
+
+    glm::vec3 force = direction * gravity * p1.mass * p2.mass;
+    force /= pow(distance, 2.0f);
+
+    p1.velocity += force * deltaTime / p1.mass;
+    p2.velocity -= force * deltaTime / p2.mass;
+
+
+}
