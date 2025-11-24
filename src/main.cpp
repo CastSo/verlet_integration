@@ -16,6 +16,7 @@ float xclicked = 0;
 float yclicked = 0;
 
 bool isClicked;
+bool leftMouseDown;
 bool canAddBall = false;
 
 World world;
@@ -78,7 +79,10 @@ void mouse_callback(GLFWwindow* window, int button, int action, int mods){
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         
         isClicked = true;
-
+        leftMouseDown = true;
+    } else {
+        isClicked = false;
+        leftMouseDown = false;
     }
 
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
@@ -157,7 +161,7 @@ int main() {
 
     world.scrHeight = SCR_HEIGHT;
     world.scrWidth = SCR_WIDTH;
-    cloth.particleScale = 4;
+    cloth.particleScale = 2;
     cloth.stickBaseLen = 6;
     cloth.clothPtWidth = 20;
     cloth.clothPtHeight = 10;
@@ -167,10 +171,10 @@ int main() {
     Factory* factory = new Factory(world, cloth, points, sticks, quads, lights, balls, springs);
     Render* render = new Render(world, cloth, points, sticks, quads, lights, balls, springs);
     Particle* particle = new Particle(world, cloth, points, balls);
-    Gui* gui = new Gui(world, cloth, points, sticks, quads,lights);
+    Gui* gui = new Gui(window, world, cloth, points, sticks, balls);
 
     factory->make_cloth();
-    balls.push_back(factory->make_ball(0.0f, 0.0f, 8, 100000, {0.0f, 0.5f, 0.0f}));
+    balls.push_back(factory->make_ball(0.0f, 0.0f, 8, {1.0f, 1.0f, 1.0f}, 100000, {0.0f, 0.5f, 0.0f}));
     //std::cout << quads.mesh.VAO << std::endl;
 
     float lastFrame = glfwGetTime();
@@ -188,6 +192,7 @@ int main() {
         if (isClicked && canAddBall){
             factory->make_ball_spring((double)xCursorPos, (double)yCursorPos);
             isClicked = false;
+            
         }
 
         currentFrame = glfwGetTime();
@@ -203,11 +208,16 @@ int main() {
         if(!gui->get_clear_cloth()) {
             render->update_cloth(gui->get_show_points(), gui->get_show_sticks());
         }
+        if(!canAddBall) {
+            gui->update_input(leftMouseDown);
+        }
+
         render->update_balls_springs(canAddBall);
         
         particle->update(deltaTime);
         
-        gui->update();
+        gui->update_imgui();
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();

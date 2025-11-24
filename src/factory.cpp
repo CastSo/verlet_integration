@@ -28,15 +28,16 @@ void Factory::make_cloth() {
     
 }
 
-Point Factory::make_ball(float xpos, float ypos, int scale, int mass, glm::vec3 force) {
+Point Factory::make_ball(float xpos, float ypos, int scale, glm::vec3 color, int mass, glm::vec3 force) {
     Mesh ballMesh = make_point_instance();
     Point ball;
     ball.mesh = ballMesh;
     ball.scale = scale;
     ball.height = ball.scale/ world.scrHeight;
     ball.width = ball.scale / world.scrWidth;
+    ball.mesh.color = color;
     ball.mass = mass;
-    ball.force = {0.0f, mass, 0.0f};
+    ball.force = {force.x, force.y, force.z};
 
     ball.position.x = xpos;
     ball.position.y = ypos;
@@ -46,16 +47,17 @@ Point Factory::make_ball(float xpos, float ypos, int scale, int mass, glm::vec3 
 
 void Factory::make_ball_spring(float xpos, float ypos) {
     Stick spring; 
+    float mass = 100000.0f;
+    Point ball1 = make_ball(xpos, ypos, 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 1.0f, 0.0f});
+    Point ball2 = make_ball(xpos+(4*16), ypos+(4*16), 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 1.0f, 0.0f});
 
-    Point ball1 = make_ball(xpos, ypos, 8, 100000, {0.0f, 100000, 0.0f});
-    Point ball2 = make_ball(xpos+32.0f, ypos, 8, 100000, {0.0f, 100000, 0.0f});
-    
     balls.push_back(ball1);
     balls.push_back(ball2);
 
     spring.ptStartIndex = balls.size()-1;
     spring.ptEndIndex = balls.size()-2;
     spring.mesh = make_stick_instance();
+    spring.mesh.color = {1.0f, 1.0f, 1.0f};
     springs.push_back(spring);
 
 }
@@ -67,8 +69,9 @@ void Factory::make_points() {
     point.scale = 8;
     point.height = point.scale/ world.scrHeight;
     point.width = point.scale / world.scrWidth;
+    point.mesh.color = {1.0f, 1.0f, 1.0f};
     point.mass = 100000;
-    point.force = {0.0f, 0.5f, 0.0f};
+    point.force = {5*point.mass, 5*point.mass, 0.0f};
 
     int xoffset = 0;
     int yoffset = 0;
@@ -111,6 +114,7 @@ void Factory::make_sticks() {
     for(int y = 0; y < points.size(); y++) { 
 
         stick.mesh = make_stick_instance();
+        stick.mesh.color = {1.0f, 1.0f, 1.0f};
         sticks.push_back(stick);
 
         
@@ -164,10 +168,10 @@ void Factory::make_quads() {
 Mesh Factory::make_point_instance() {
     unsigned int VBO, VAO, EBO;
     std::vector<float> vertices = {
-         1.0f,  1.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-         1.0f, -1.0f,  0.0f,  1.0f,  1.0f,  1.0f,  
-        -1.0f, -1.0f,  0.0f,  1.0f,  1.0f,  1.0f,   
-        -1.0f,  1.0f,  0.0f,  1.0f,  1.0f,  1.0f   
+         1.0f,  1.0f,  0.0f,  
+         1.0f, -1.0f,  0.0f,   
+        -1.0f, -1.0f,  0.0f,     
+        -1.0f,  1.0f,  0.0f
     };
 
     
@@ -193,12 +197,9 @@ Mesh Factory::make_point_instance() {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 
     //position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    //color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float))); 
-    glEnableVertexAttribArray(1);
 
     unsigned int shader = make_shader(
         "../src/view/shader.vert",
@@ -209,8 +210,6 @@ Mesh Factory::make_point_instance() {
     mesh.VBO = VBO;
     mesh.EBO = EBO;
     mesh.shader = shader;
-    //mesh.transformVBO = make_transform_buffer();
-    // mesh.colorVBO = make_color_buffer();
 
     return mesh;
 
@@ -366,11 +365,6 @@ Mesh Factory::make_stick_instance() {
         0.0f,  0.0f,   0.0f, 
     };
 
-    std::vector<float> colors = {
-        1.0f,  1.0f,   1.0f,
-        1.0f,  1.0f,   1.0f
-    };
-
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &colorVBO);
@@ -384,12 +378,6 @@ Mesh Factory::make_stick_instance() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    //color attribute
-    glBindBuffer(GL_ARRAY_BUFFER, colorVBO);
-    glEnableVertexAttribArray(1);
-
-    glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(float), colors.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0 * sizeof(float))); 
 
 
     unsigned int shader = make_shader(
@@ -400,7 +388,6 @@ Mesh Factory::make_stick_instance() {
     Mesh mesh;
     mesh.VAO = VAO;
     mesh.VBO = VBO;
-    mesh.colorVBO = colorVBO;
     mesh.shader = shader;
 
     return mesh;

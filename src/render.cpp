@@ -43,15 +43,16 @@ void Render::update_balls_springs(bool canAddBall) {
         //First ball used as preview
         float xn = normalize_xposition(balls[0].position.x, 1, world.scrWidth);
         float yn = normalize_yposition(balls[0].position.y, 1, world.scrHeight);
-        float zn = 0.0f;
+        float zn = 0.1f;
         render_point(balls[0], xn, yn, zn);
     }
+
 
     for(int i = 1; i < balls.size(); i++)
     {    
         float xn = normalize_xposition(balls[i].position.x, 1, world.scrWidth);
         float yn = normalize_yposition(balls[i].position.y, 1, world.scrHeight);
-        float zn = 0.0f;
+        float zn = 0.1f;
         render_point(balls[i], xn, yn, zn);
     }
 
@@ -151,17 +152,19 @@ void Render::render_point(Point point, float xn, float yn, float zn) {
     glm::mat4 view  = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(xn, yn, zn));
     model = glm::scale(model, glm::vec3(point.width, point.height, 1.0f));
-
     //glm::mat4 proj  = glm::ortho(0.0f, static_cast<float>(world.scrWidth), 0.0f, static_cast<float>(world.scrHeight), 0.1f, 100.0f);
     glm::mat4 proj = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
+
 
     unsigned int modelLoc = glGetUniformLocation(point.mesh.shader, "model");
     unsigned int viewLoc = glGetUniformLocation(point.mesh.shader, "view");
     unsigned int projLoc  = glGetUniformLocation(point.mesh.shader, "projection");
+    unsigned int colorLoc = glGetUniformLocation(point.mesh.shader, "color");
 
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
     glUniformMatrix4fv(viewLoc,  1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(projLoc,  1, GL_FALSE, glm::value_ptr(proj));
+    glUniform3f(colorLoc, point.mesh.color.x, point.mesh.color.y, point.mesh.color.z);
     
     
     glBindVertexArray(point.mesh.VAO);
@@ -289,14 +292,19 @@ void Render::render_stick(Stick stick, float xnStart, float ynStart, float xnEnd
     unsigned int modelLoc = glGetUniformLocation(stick.mesh.shader, "model");
     unsigned int viewLoc = glGetUniformLocation(stick.mesh.shader, "view");
     unsigned int projLoc  = glGetUniformLocation(stick.mesh.shader, "projection");
+    unsigned int colorLoc = glGetUniformLocation(stick.mesh.shader, "color");
 
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
     glUniformMatrix4fv(viewLoc,  1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(projLoc,  1, GL_FALSE, glm::value_ptr(proj));    
+    glUniform3f(colorLoc, stick.mesh.color.x, stick.mesh.color.y, stick.mesh.color.z);
+    
 
     glBindBuffer(GL_ARRAY_BUFFER, stick.mesh.VBO);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), NULL, GL_STATIC_DRAW);
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), vertices.data());
+
+    glLineWidth(4.0f);
 
     glBindVertexArray(stick.mesh.VAO);
 

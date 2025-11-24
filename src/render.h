@@ -3,6 +3,7 @@
 #include "./shader.h"
 #include "./components/components.h"
 
+
 class Render {
     public:
         Render(World& world,  Cloth& cloth, std::vector<Point>& points, 
@@ -14,6 +15,7 @@ class Render {
     private:
         World& world;
         Cloth& cloth;
+
         std::vector<Point>& points;
         std::vector<Stick>& sticks;
         std::vector<Quad>& quads;

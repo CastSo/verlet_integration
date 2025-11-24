@@ -13,7 +13,7 @@ class Factory {
         void make_points();
 
         void make_ball_spring(float xpos, float ypos);
-        Point make_ball(float xpos, float ypos, int scale, int mass, glm::vec3 force);
+        Point make_ball(float xpos, float ypos, int scale, glm::vec3 color, int mass, glm::vec3 force);
 
     private:
         int pointLength;

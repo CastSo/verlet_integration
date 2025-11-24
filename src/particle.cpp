@@ -52,8 +52,9 @@ void Particle::update_balls(float deltaTime) {
                 continue;
             }
             Point& b2 = balls[j];
-            if(check_collision(b1, b2)) {
-                satisfy_constraints(b1, b2, (b1.scale));
+            bool isCollided = check_collision(b1, b2); 
+            if(isCollided) {
+                satisfy_constraints(b1, b2, (b1.scale*4));
             }
         }
     }
@@ -62,12 +63,10 @@ void Particle::update_balls(float deltaTime) {
         Point& b1 = balls[i];
         Point& b2 = balls[i+1];
 
-        b1.constraint = b1.position;
-        b2.constraint = b2.position;
         
-        clamp_particles(b1, cloth.stickBaseLen, cloth.stickBaseLen);
-        clamp_particles(b2, cloth.stickBaseLen, cloth.stickBaseLen);
-        satisfy_constraints(b1, b2, 32.0f);
+        clamp_particles(b1, (4*b1.scale), (4*b1.scale));
+        clamp_particles(b2, (4*b2.scale), (4*b2.scale));
+        satisfy_constraints(b1, b2, (4*b1.scale));
     }
 }
 
@@ -179,14 +178,14 @@ void Particle::satisfy_constraints(Point& p1, Point& p2, float restLength) {
         float invmass2 = 1/p2.mass;
 
         float diff = (restLength - deltaLength) /  ((deltaLength)*(invmass1+invmass2));  
-
+        float k = 1.0f;
         if(!p1.isPinned)
         {    
-            p1.position -= invmass1 * delta * diff;
+            p1.position -= k * invmass1 * delta * diff;
         }
         if(!p2.isPinned)
         {
-            p2.position += invmass2 * delta * diff;
+            p2.position += k * invmass2 * delta * diff;
         }
 }
 
@@ -203,7 +202,7 @@ void Particle::process_collision(Point p1, Point p2, float deltaTime) {
     glm::vec3 delta = p2.position - p1.position;
     float sumRadii = (p1.scale/2) + (p2.scale/2);
     float distance = glm::length(delta);
-    int K = 10000;
+    int K = 1;
     if (distance < sumRadii) {
         glm::vec3 force = K * (sumRadii - distance) * (delta / distance);
         p1.velocity -= K * deltaTime / p1.mass;

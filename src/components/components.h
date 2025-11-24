@@ -4,7 +4,7 @@
 struct Mesh {
 
     unsigned int VAO, VBO, EBO;
-    unsigned int colorVBO;
+    glm::vec3 color;
     unsigned int normalVBO;
     unsigned int shader;
 
@@ -31,8 +31,6 @@ struct Point {
 
 struct Stick {
     Mesh mesh;
-    // Point *pointStart;
-    // Point *pointEnd;
     int ptStartIndex;
     int ptEndIndex;
     float length;

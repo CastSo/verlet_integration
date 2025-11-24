@@ -5,24 +5,28 @@
 
 class Gui {
     public:
-        Gui(World& world,  Cloth& cloth, std::vector<Point>& points, 
-            std::vector<Stick>& sticks, std::vector<Quad>& quads, std::vector<Light>& lights);
+        Gui(GLFWwindow *window, World& world,  Cloth& cloth, std::vector<Point>& points, 
+            std::vector<Stick>& sticks, std::vector<Point>& balls);
         ~Gui();
-        void update();
+        void update_imgui();
+        void update_input(bool mouseDown);
         bool get_show_sticks();
         bool get_show_points();
         bool get_clear_cloth();
+        
 
     private:
         bool showPoints;
         bool showSticks;
         bool clearCloth;
-
+        
+        GLFWwindow *window;
         World& world;
         Cloth& cloth;
         std::vector<Point>& points;
         std::vector<Stick>& sticks;
-        std::vector<Quad>& quads;
-        std::vector<Light>& lights;
+        std::vector<Point>& balls;
+
+        void detect_mouse(bool mouseDown);
 
 };
