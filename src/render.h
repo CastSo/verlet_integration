@@ -6,22 +6,23 @@
 
 class Render {
     public:
-        Render(World& world,  Cloth& cloth, std::vector<Point>& points, 
+        Render(World& world,  Cloth& cloth, std::vector<std::vector<int>>& graph, std::vector<Point>& points, 
             std::vector<Stick>& sticks, std::vector<Quad>& quads, std::vector<Light>& lights,
-            std::vector<Point>& balls, std::vector<Stick>& springs); 
+            std::vector<Point>& nodes, Stick& spring); 
         ~Render();
         void update_cloth(bool showPoints, bool showSticks);
-        void update_balls_springs(bool canAddBall);
+        void update_nodes_springs(bool canAddnode);
     private:
         World& world;
         Cloth& cloth;
-
+        
+        std::vector<std::vector<int>>& graph;
         std::vector<Point>& points;
         std::vector<Stick>& sticks;
         std::vector<Quad>& quads;
         std::vector<Light>& lights;
-        std::vector<Point>& balls;
-        std::vector<Stick>& springs;
+        std::vector<Point>& nodes;
+        Stick& spring;
 
         glm::vec3 lightPos;
         

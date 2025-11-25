@@ -5,27 +5,28 @@
 
 class Factory {
     public:
-        Factory(World& world, Cloth& cloth, std::vector<Point>& points, std::vector<Stick>& sticks, 
-                std::vector<Quad>& quads, std::vector<Light>& lights, std::vector<Point>& balls,
-                std::vector<Stick>& springs);
+        Factory(World& world, Cloth& cloth, std::vector<std::vector<int>>& graph, std::vector<Point>& points,
+                 std::vector<Stick>& sticks, std::vector<Quad>& quads, std::vector<Light>& lights, 
+                std::vector<Point>& nodes, Stick& spring);
         ~Factory();
         void make_cloth();
         void make_points();
-
-        void make_ball_spring(float xpos, float ypos);
-        Point make_ball(float xpos, float ypos, int scale, glm::vec3 color, int mass, glm::vec3 force);
+        Mesh make_stick_instance();
+        void make_node_spring(float xpos, float ypos);
+        Point make_node(float xpos, float ypos, int scale, glm::vec3 color, int mass, glm::vec3 force);
 
     private:
         int pointLength;
         int betweenDistance;
         World& world;
         Cloth& cloth;
+        std::vector<std::vector<int>>& graph;
         std::vector<Point>& points;
         std::vector<Stick>& sticks;
         std::vector<Quad>& quads;
         std::vector<Light>& lights;
-        std::vector<Point>& balls;
-        std::vector<Stick>& springs;
+        std::vector<Point>& nodes;
+        Stick& spring;
 
         float normalize_position(float position, int cellLength, int scrLength);
         
@@ -37,7 +38,6 @@ class Factory {
         unsigned int make_transform_buffer();
         unsigned int make_color_buffer();
         Mesh make_point_instance();
-        Mesh make_stick_instance();
         Mesh make_quad_instance(std::vector<float> vertices);
         Mesh make_light_instance();
         

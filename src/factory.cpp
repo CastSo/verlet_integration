@@ -1,16 +1,17 @@
 #include "factory.h"
 
-Factory::Factory(World& world, Cloth& cloth, std::vector<Point>& points, 
+Factory::Factory(World& world, Cloth& cloth, std::vector<std::vector<int>>& graph, std::vector<Point>& points, 
             std::vector<Stick>& sticks, std::vector<Quad>& quads, std::vector<Light>& lights,
-            std::vector<Point>& balls, std::vector<Stick>& springs):
+            std::vector<Point>& nodes, Stick& spring):
         world(world),
         cloth(cloth),
+        graph(graph),
         points(points),
         sticks(sticks),
         quads(quads),
         lights(lights),
-        balls(balls),
-        springs(springs) {
+        nodes(nodes),
+        spring(spring) {
 
 }
 
@@ -28,37 +29,59 @@ void Factory::make_cloth() {
     
 }
 
-Point Factory::make_ball(float xpos, float ypos, int scale, glm::vec3 color, int mass, glm::vec3 force) {
-    Mesh ballMesh = make_point_instance();
-    Point ball;
-    ball.mesh = ballMesh;
-    ball.scale = scale;
-    ball.height = ball.scale/ world.scrHeight;
-    ball.width = ball.scale / world.scrWidth;
-    ball.mesh.color = color;
-    ball.mass = mass;
-    ball.force = {force.x, force.y, force.z};
+Point Factory::make_node(float xpos, float ypos, int scale, glm::vec3 color, int mass, glm::vec3 force) {
+    Mesh nodeMesh = make_point_instance();
+    Point node;
+    node.mesh = nodeMesh;
+    node.scale = scale;
+    node.height = node.scale/ world.scrHeight;
+    node.width = node.scale / world.scrWidth;
+    node.mesh.color = color;
+    node.mass = mass;
+    node.force = {force.x, force.y, force.z};
 
-    ball.position.x = xpos;
-    ball.position.y = ypos;
+    node.position.x = xpos;
+    node.position.y = ypos;
     
-    return ball;
+    return node;
 }
 
-void Factory::make_ball_spring(float xpos, float ypos) {
-    Stick spring; 
+void Factory::make_node_spring(float xpos, float ypos) {
     float mass = 100000.0f;
-    Point ball1 = make_ball(xpos, ypos, 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 1.0f, 0.0f});
-    Point ball2 = make_ball(xpos+(4*16), ypos+(4*16), 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 1.0f, 0.0f});
+    Point node1 = make_node(xpos, ypos, 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 1.0f, 0.0f});
+    Point node2 = make_node(xpos, ypos+(4*16), 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 1.0f, 0.0f});
+    Point node3 = make_node(xpos+(4*16), ypos+(4*16), 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 1.0f, 0.0f});
+    Point node4 = make_node(xpos+(4*16), ypos, 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 1.0f, 0.0f});
 
-    balls.push_back(ball1);
-    balls.push_back(ball2);
+    nodes.push_back(node1);
+    nodes.push_back(node2);
+    nodes.push_back(node3);
+    nodes.push_back(node4);
 
-    spring.ptStartIndex = balls.size()-1;
-    spring.ptEndIndex = balls.size()-2;
-    spring.mesh = make_stick_instance();
-    spring.mesh.color = {1.0f, 1.0f, 1.0f};
-    springs.push_back(spring);
+    int id1 = nodes.size()-4;
+    int id2 = nodes.size()-3;
+    int id3 = nodes.size()-2;
+    int id4 = nodes.size()-1;
+
+    graph.push_back({});
+    graph.push_back({});
+    graph.push_back({});
+    graph.push_back({});
+    graph[id1].push_back(id2);
+    graph[id1].push_back(id4);
+    graph[id1].push_back(id3);
+
+    graph[id2].push_back(id1);
+    graph[id2].push_back(id3);
+    graph[id2].push_back(id4);
+    
+    graph[id3].push_back(id1);
+    graph[id3].push_back(id2);
+    graph[id3].push_back(id4);
+
+    graph[id4].push_back(id1);
+    graph[id4].push_back(id3);
+    graph[id4].push_back(id2);
 
 }
 

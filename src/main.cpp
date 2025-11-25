@@ -17,7 +17,7 @@ float yclicked = 0;
 
 bool isClicked;
 bool leftMouseDown;
-bool canAddBall = false;
+bool canAddnode = false;
 
 World world;
 
@@ -86,7 +86,7 @@ void mouse_callback(GLFWwindow* window, int button, int action, int mods){
     }
 
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-        canAddBall = !canAddBall;
+        canAddnode = !canAddnode;
     }
 }
 
@@ -153,9 +153,11 @@ int main() {
     std::vector<Stick> sticks;
     std::vector<Quad> quads;
     std::vector<Light> lights;
-    std::vector<Point> balls;
-    std::vector<Stick> springs;
-
+    std::vector<Point> nodes;
+    Stick spring;
+    std::vector<std::vector<int>> graph;
+    //Node 0 is initialized
+    graph.push_back({});
 
 
 
@@ -168,13 +170,15 @@ int main() {
 
 
 
-    Factory* factory = new Factory(world, cloth, points, sticks, quads, lights, balls, springs);
-    Render* render = new Render(world, cloth, points, sticks, quads, lights, balls, springs);
-    Particle* particle = new Particle(world, cloth, points, balls);
-    Gui* gui = new Gui(window, world, cloth, points, sticks, balls);
+    Factory* factory = new Factory(world, cloth, graph, points, sticks, quads, lights, nodes, spring);
+    Render* render = new Render(world, cloth, graph, points, sticks, quads, lights, nodes, spring);
+    Particle* particle = new Particle(world, cloth, graph, points, nodes);
+    Gui* gui = new Gui(window, world, cloth, points, sticks, nodes);
 
     factory->make_cloth();
-    balls.push_back(factory->make_ball(0.0f, 0.0f, 8, {1.0f, 1.0f, 1.0f}, 100000, {0.0f, 0.5f, 0.0f}));
+    nodes.push_back(factory->make_node(0.0f, 0.0f, 8, {1.0f, 0.0f, 0.0f}, 100000, {0.0f, 0.5f, 0.0f}));
+    spring.mesh = factory->make_stick_instance();
+    spring.mesh.color = {1.0f, 1.0f, 1.0f};
     //std::cout << quads.mesh.VAO << std::endl;
 
     float lastFrame = glfwGetTime();
@@ -185,12 +189,11 @@ int main() {
         double xCursorPos, yCursorPos;
         glfwGetCursorPos(window, &xCursorPos, &yCursorPos);
 
-        balls[0].position.x = (double)xCursorPos;
-        balls[0].position.y = (double)yCursorPos;
-        //std::cout << balls[0].position.x << ", " << balls[0].position.y << std::endl;
-        //factory->make_ball((double)xCursorPos,  world.scrHeight-(double)yCursorPos);
-        if (isClicked && canAddBall){
-            factory->make_ball_spring((double)xCursorPos, (double)yCursorPos);
+        nodes[0].position.x = (double)xCursorPos;
+        nodes[0].position.y = (double)yCursorPos;
+
+        if (isClicked && canAddnode){
+            factory->make_node_spring((double)xCursorPos, (double)yCursorPos);
             isClicked = false;
             
         }
@@ -205,18 +208,18 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-        if(!gui->get_clear_cloth()) {
-            render->update_cloth(gui->get_show_points(), gui->get_show_sticks());
-        }
-        if(!canAddBall) {
+        // if(!gui->get_clear_cloth()) {
+        //     render->update_cloth(gui->get_show_points(), gui->get_show_sticks());
+        // }
+        if(!canAddnode) {
             gui->update_input(leftMouseDown);
         }
 
-        render->update_balls_springs(canAddBall);
+        render->update_nodes_springs(canAddnode);
         
         particle->update(deltaTime);
         
-        gui->update_imgui();
+        //gui->update_imgui();
 
 
         glfwSwapBuffers(window);

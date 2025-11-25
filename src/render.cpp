@@ -1,16 +1,17 @@
 #include "render.h"
 
-Render::Render(World& world, Cloth& cloth, std::vector<Point>& points, 
+Render::Render(World& world, Cloth& cloth, std::vector<std::vector<int>>& graph, std::vector<Point>& points, 
             std::vector<Stick>& sticks, std::vector<Quad>& quads, std::vector<Light>& lights,
-            std::vector<Point>& balls, std::vector<Stick>& springs):
+            std::vector<Point>& nodes, Stick& spring):
         world(world),
         cloth(cloth),
+        graph(graph),
         points(points),
         sticks(sticks),
         quads(quads),
         lights(lights),
-        balls(balls),
-        springs(springs) {
+        nodes(nodes),
+        spring(spring) {
         lightPos = glm::vec3(1.2f, 1.0f, 5.0f);
 }
 
@@ -38,34 +39,52 @@ void Render::update_cloth(bool showPoints, bool showSticks) {
 
 }
 
-void Render::update_balls_springs(bool canAddBall) {
-    if(canAddBall) {
-        //First ball used as preview
-        float xn = normalize_xposition(balls[0].position.x, 1, world.scrWidth);
-        float yn = normalize_yposition(balls[0].position.y, 1, world.scrHeight);
+void Render::update_nodes_springs(bool canAddnode) {
+    if(canAddnode) {
+        //First node used as preview
+        float xn = normalize_xposition(nodes[0].position.x, 1, world.scrWidth);
+        float yn = normalize_yposition(nodes[0].position.y, 1, world.scrHeight);
         float zn = 0.1f;
-        render_point(balls[0], xn, yn, zn);
+        render_point(nodes[0], xn, yn, zn);
     }
-
-
-    for(int i = 1; i < balls.size(); i++)
-    {    
-        float xn = normalize_xposition(balls[i].position.x, 1, world.scrWidth);
-        float yn = normalize_yposition(balls[i].position.y, 1, world.scrHeight);
+    
+    for (int i = 1; i < graph.size(); i++) {
+        float xn = normalize_xposition(nodes[i].position.x, 1, world.scrWidth);
+        float yn = normalize_yposition(nodes[i].position.y, 1, world.scrHeight);
         float zn = 0.1f;
-        render_point(balls[i], xn, yn, zn);
-    }
+        render_point(nodes[i], xn, yn, zn);
+        for (int j = 0; j < graph[i].size(); j++) {
+            int currNode = graph[i][j];
+            
+            if(currNode > i) {
+                float xn = normalize_xposition(nodes[currNode].position.x, 1, world.scrWidth);
+                float yn = normalize_yposition(nodes[currNode].position.y, 1, world.scrHeight);
+                float zn = 0.1f;
+                render_point(nodes[currNode], xn, yn, zn);
 
-    for(int i = 0; i < springs.size(); i++) {
-        glm::vec3 posStart = balls[springs[i].ptStartIndex].position;
-        glm::vec3 posEnd = balls[springs[i].ptEndIndex].position;
-        float xnStartPt = normalize_xposition(posStart.x, 1, world.scrWidth);
-        float ynStartPt = normalize_yposition(posStart.y, 1, world.scrHeight);
-        float xnEndPt = normalize_xposition(posEnd.x, 1, world.scrWidth);
-        float ynEndPt = normalize_yposition(posEnd.y, 1, world.scrHeight);
+                glm::vec3 posStart = nodes[i].position;
+                glm::vec3 posEnd = nodes[currNode].position;
+                float xnStartPt = normalize_xposition(posStart.x, 1, world.scrWidth);
+                float ynStartPt = normalize_yposition(posStart.y, 1, world.scrHeight);
+                float xnEndPt = normalize_xposition(posEnd.x, 1, world.scrWidth);
+                float ynEndPt = normalize_yposition(posEnd.y, 1, world.scrHeight);
+                
+                render_stick(spring, xnStartPt, ynStartPt, xnEndPt, ynEndPt);
+            }
+        }
+    }
+    
+
+    // for(int i = 0; i < springs.size(); i++) {
+    //     glm::vec3 posStart = nodes[springs[i].ptStartIndex].position;
+    //     glm::vec3 posEnd = nodes[springs[i].ptEndIndex].position;
+    //     float xnStartPt = normalize_xposition(posStart.x, 1, world.scrWidth);
+    //     float ynStartPt = normalize_yposition(posStart.y, 1, world.scrHeight);
+    //     float xnEndPt = normalize_xposition(posEnd.x, 1, world.scrWidth);
+    //     float ynEndPt = normalize_yposition(posEnd.y, 1, world.scrHeight);
         
-        render_stick(springs[i], xnStartPt, ynStartPt, xnEndPt, ynEndPt);
-    }
+    //     render_stick(springs[i], xnStartPt, ynStartPt, xnEndPt, ynEndPt);
+    // }
    // std::cout << springs.size() << std::endl;
 }
 

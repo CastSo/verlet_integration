@@ -6,7 +6,7 @@
 class Gui {
     public:
         Gui(GLFWwindow *window, World& world,  Cloth& cloth, std::vector<Point>& points, 
-            std::vector<Stick>& sticks, std::vector<Point>& balls);
+            std::vector<Stick>& sticks, std::vector<Point>& nodes);
         ~Gui();
         void update_imgui();
         void update_input(bool mouseDown);
@@ -25,7 +25,7 @@ class Gui {
         Cloth& cloth;
         std::vector<Point>& points;
         std::vector<Stick>& sticks;
-        std::vector<Point>& balls;
+        std::vector<Point>& nodes;
 
         void detect_mouse(bool mouseDown);
 

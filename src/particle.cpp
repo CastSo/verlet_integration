@@ -1,10 +1,11 @@
 #include "./particle.h"
 
-Particle::Particle(World& world, Cloth& cloth, std::vector<Point>& points, std::vector<Point>& balls):
+Particle::Particle(World& world, Cloth& cloth, std::vector<std::vector<int>>& graph, std::vector<Point>& points, std::vector<Point>& nodes):
         world(world),
         cloth(cloth),
+        graph(graph),
         points(points),
-        balls(balls) {
+        nodes(nodes) {
 
 }
 
@@ -16,7 +17,7 @@ Particle::~Particle() {
 
 void Particle::update(float deltaTime) {
     update_points(deltaTime);
-    update_balls(deltaTime);
+    update_nodes(deltaTime);
 }
 
 bool Particle::check_collision(Point p1, Point p2) {
@@ -28,30 +29,29 @@ bool Particle::check_collision(Point p1, Point p2) {
     return collisionX && collisionY;
 }
 
-void Particle::update_balls(float deltaTime) {
+void Particle::update_nodes(float deltaTime) {
     float xoffset = world.scrWidth/2;
-    for (int i = 1; i < balls.size(); i++) {
-        
-        float yTmpPosition = balls[i].position.y;
-        balls[i].position.y = process_verlet(deltaTime, balls[i].position.y, balls[i].prevPosition.y, balls[i].force.y, balls[i].mass);
-        balls[i].prevPosition.y = yTmpPosition;
+    for (int i = 1; i < nodes.size(); i++) {
+        clamp_to_screen(nodes[i], deltaTime);
+        float yTmpPosition = nodes[i].position.y;
+        nodes[i].position.y += process_verlet(deltaTime, nodes[i].position.y, nodes[i].prevPosition.y, nodes[i].force.y, nodes[i].mass);
+        nodes[i].prevPosition.y = yTmpPosition;
 
-        float xTmpPosition = balls[i].position.x;
-        balls[i].position.x = process_verlet(deltaTime, balls[i].position.x, balls[i].prevPosition.x, balls[i].force.x, balls[i].mass);
-        balls[i].prevPosition.x = xTmpPosition;
+        float xTmpPosition = nodes[i].position.x;
+        nodes[i].position.x += process_verlet(deltaTime, nodes[i].position.x, nodes[i].prevPosition.x, nodes[i].force.x, nodes[i].mass);
+        nodes[i].prevPosition.x = xTmpPosition;
 
         
-        clamp_to_screen(balls[i], deltaTime);
+        
     }
-
-    int ballCount = balls.size();
-    for (int i = 1; i < ballCount; i++) {
-        Point& b1 = balls[i];
-        for (int j = i + 2; j < ballCount; j++) {
+    
+    for (int i = 1; i < nodes.size(); i++) {
+        Point& b1 = nodes[i];
+        for (int j = i + 2; j < nodes.size(); j++) {
             if(i == j) {
                 continue;
             }
-            Point& b2 = balls[j];
+            Point& b2 = nodes[j];
             bool isCollided = check_collision(b1, b2); 
             if(isCollided) {
                 satisfy_constraints(b1, b2, (b1.scale*4));
@@ -59,15 +59,24 @@ void Particle::update_balls(float deltaTime) {
         }
     }
 
-    for (int i = 1; i < balls.size()-1; i += 2){
-        Point& b1 = balls[i];
-        Point& b2 = balls[i+1];
 
+    for (int i = 1; i < graph.size(); i++) {
+        Point& n1 = nodes[i];
         
-        clamp_particles(b1, (4*b1.scale), (4*b1.scale));
-        clamp_particles(b2, (4*b2.scale), (4*b2.scale));
-        satisfy_constraints(b1, b2, (4*b1.scale));
+        for (int j = 0; j < graph[i].size(); j++) {
+            int currNode = graph[i][j];
+            
+            Point& n2 = nodes[currNode];
+            clamp_particles(n1, (4*n1.scale), (4*n1.scale));
+            if(currNode > i)
+                clamp_particles(n2, (4*n2.scale), (4*n2.scale));
+
+            satisfy_constraints(n1, n2, (4*n1.scale));
+            
+        }
     }
+
+
 }
 
 void Particle::update_points(float deltaTime) {
@@ -79,11 +88,11 @@ void Particle::update_points(float deltaTime) {
         }
 
         float xTmpPosition = points[i].position.x;
-        points[i].position.x = process_verlet(deltaTime, points[i].position.x, points[i].prevPosition.x, points[i].force.x, points[i].mass);
+        points[i].position.x += process_verlet(deltaTime, points[i].position.x, points[i].prevPosition.x, points[i].force.x, points[i].mass);
         points[i].prevPosition.x = xTmpPosition;
 
         float yTmpPosition = points[i].position.y;
-        points[i].position.y = process_verlet(deltaTime, points[i].position.y, points[i].prevPosition.y, points[i].force.y, points[i].mass);
+        points[i].position.y += process_verlet(deltaTime, points[i].position.y, points[i].prevPosition.y, points[i].force.y, points[i].mass);
         points[i].prevPosition.y = yTmpPosition;
 
         clamp_particles(points[i], cloth.stickBaseLen, cloth.stickBaseLen);
@@ -144,24 +153,24 @@ void Particle::clamp_to_screen(Point& point, float deltaTime) {
 
     if (point.position.y <= ymin) {
         point.position.y = ymin;
-        point.position.y = process_verlet(deltaTime, point.position.y, point.prevPosition.y, -point.force.y, point.mass);
+        point.position.y += process_verlet(deltaTime, point.position.y, point.prevPosition.y, -point.force.y, point.mass);
         
     }
 
     if (point.position.y >= ymax) {
         point.position.y = ymax;
-        point.position.y = process_verlet(deltaTime, point.position.y, point.prevPosition.y, -point.force.y, point.mass);
+        point.position.y += process_verlet(deltaTime, point.position.y, point.prevPosition.y, -point.force.y, point.mass);
         
     }
 
     if (point.position.x <= xmin) {
         point.position.x = xmin;
-        point.position.x = process_verlet(deltaTime, point.position.x, point.prevPosition.x, -point.force.x, point.mass);
+        point.position.x += process_verlet(deltaTime, point.position.x, point.prevPosition.x, -point.force.x, point.mass);
     }
 
     if (point.position.x >= xmax) {
         point.position.x = xmax;
-        point.position.x = process_verlet(deltaTime, point.position.x, point.prevPosition.x, -point.force.x, point.mass);
+        point.position.x += process_verlet(deltaTime, point.position.x, point.prevPosition.x, -point.force.x, point.mass);
     }
 }
 
@@ -179,58 +188,28 @@ void Particle::satisfy_constraints(Point& p1, Point& p2, float restLength) {
 
         float diff = (restLength - deltaLength) /  ((deltaLength)*(invmass1+invmass2));  
         float k = 1.0f;
+        float elasticity = 0.0f;
         if(!p1.isPinned)
         {    
-            p1.position -= k * invmass1 * delta * diff;
+            p1.position -= k * (1.f + elasticity) *  invmass1 * delta * diff;
         }
         if(!p2.isPinned)
         {
-            p2.position += k * invmass2 * delta * diff;
+            p2.position += k * (1.f + elasticity) * invmass2 * delta * diff;
         }
 }
 
 float Particle::process_verlet(float deltaTime, float position, float prevPosition, float force, float mass) {
     float acceleration = force/mass;
 
-    float newPosition = (2*position) - prevPosition + acceleration * (deltaTime * deltaTime);
+    float C = 10;
+
+    float newPosition =  position - prevPosition + acceleration * (deltaTime * deltaTime);
     
     return newPosition;
 
 }
 
-void Particle::process_collision(Point p1, Point p2, float deltaTime) {
-    glm::vec3 delta = p2.position - p1.position;
-    float sumRadii = (p1.scale/2) + (p2.scale/2);
-    float distance = glm::length(delta);
-    int K = 1;
-    if (distance < sumRadii) {
-        glm::vec3 force = K * (sumRadii - distance) * (delta / distance);
-        p1.velocity -= K * deltaTime / p1.mass;
-        p2.velocity += K * deltaTime / p2.mass;
-    }
-
-    if(!p1.isPinned)
-    {    
-        p1.position += p1.velocity * deltaTime;
-    }
-    if(!p2.isPinned)
-    {
-        p2.position += p1.velocity * deltaTime;
-    }
-}
-
-void Particle::process_force(Point p1, Point p2, float deltaTime){
-    glm::vec3 delta = p2.position - p1.position;
-    float distance = glm::length(delta);
-    glm::vec3 direction = delta / distance;
-    
-    float gravity = 6.67*pow(10, -11);
-
-    glm::vec3 force = direction * gravity * p1.mass * p2.mass;
-    force /= pow(distance, 2.0f);
-
-    p1.velocity += force * deltaTime / p1.mass;
-    p2.velocity -= force * deltaTime / p2.mass;
 
 
-}
+

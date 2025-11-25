@@ -4,7 +4,7 @@
 
 class Particle {
     public:
-        Particle(World& world,  Cloth& cloth, std::vector<Point>& points, std::vector<Point>& balls);
+        Particle(World& world,  Cloth& cloth, std::vector<std::vector<int>>& graph, std::vector<Point>& points, std::vector<Point>& nodes);
         ~Particle();
         void update(float deltaTime);
         void check_all_collisions();
@@ -12,11 +12,12 @@ class Particle {
     private:
         World& world;
         Cloth& cloth;
+        std::vector<std::vector<int>>& graph;
         std::vector<Point>& points;
-        std::vector<Point>& balls;
+        std::vector<Point>& nodes;
         
         void update_points(float deltaTime);
-        void update_balls(float deltaTime);
+        void update_nodes(float deltaTime);
         glm::vec3 reflect_vector(glm::vec3 vector);
 
         bool check_collision(Point p1, Point p2);
