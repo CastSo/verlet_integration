@@ -47,11 +47,11 @@ Point Factory::make_node(float xpos, float ypos, int scale, glm::vec3 color, int
 }
 
 void Factory::make_node_spring(float xpos, float ypos) {
-    float mass = 100000.0f;
+    float mass = 10000.0f;
     Point node1 = make_node(xpos, ypos, 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 1.0f, 0.0f});
-    Point node2 = make_node(xpos, ypos+(4*16), 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 1.0f, 0.0f});
-    Point node3 = make_node(xpos+(4*16), ypos+(4*16), 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 1.0f, 0.0f});
-    Point node4 = make_node(xpos+(4*16), ypos, 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 1.0f, 0.0f});
+    Point node2 = make_node(xpos, ypos+1, 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 1.0f, 0.0f});
+    Point node3 = make_node(xpos+1, ypos+1, 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 1.0f, 0.0f});
+    Point node4 = make_node(xpos+1, ypos, 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 1.0f, 0.0f});
 
     nodes.push_back(node1);
     nodes.push_back(node2);
@@ -67,6 +67,7 @@ void Factory::make_node_spring(float xpos, float ypos) {
     graph.push_back({});
     graph.push_back({});
     graph.push_back({});
+
     graph[id1].push_back(id2);
     graph[id1].push_back(id4);
     graph[id1].push_back(id3);

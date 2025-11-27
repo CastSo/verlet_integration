@@ -26,7 +26,7 @@ float Render::normalize_xposition(float position, int particleScale, int scrLeng
 
 float Render::normalize_yposition(float position, int particleScale, int scrLength) {
 
-    return 1.0f - 2.0f * (position * particleScale / (float)scrLength); 
+    return -1.0f + 2.0f * (position * particleScale / (float)scrLength); 
 }
 
 void Render::update_cloth(bool showPoints, bool showSticks) {

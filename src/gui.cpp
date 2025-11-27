@@ -60,46 +60,29 @@ void Gui::detect_mouse(bool mouseDown) {
         int size = nodes[i].scale;
         bool collisionX = nodes[i].position.x + size >= xmouse && 
                         xmouse + size >= nodes[i].position.x;
-        bool collisionY = nodes[i].position.y + size >= ymouse && 
-                        xmouse + size >= nodes[i].position.y;
+        bool collisionY = nodes[i].position.y + size >= (world.scrHeight-ymouse) && 
+                        (world.scrHeight-ymouse) + size  >= nodes[i].position.y;
         bool mouseCollides = collisionX && collisionY;
 
         if(mouseCollides) {
-            nodes[i].mesh.color = collideColor;
+            
             if(mouseDown) {
-                nodes[i].isPinned = true;
-                nodes[i].position.x = xmouse;
-                nodes[i].position.y = ymouse;
+                nodes[i].mesh.color = collideColor;
+                nodes[i].isPinned = true; 
+            } 
 
-                // std::cout << nodes[i].position.x << ", " << nodes[i].position.y << 
-                //     ", cursor" << xmouse << ", " << ymouse << std::endl;
-            }
+            
         } else if (nodes[i].mesh.color.x != 1.0f && nodes[i].mesh.color.x != 1.0f && nodes[i].mesh.color.x != 1.0f) {
+            nodes[i].isPinned = false; 
             nodes[i].mesh.color = {1.0f, 1.0f, 1.0f};
-            nodes[i].isPinned = false;
+        }
+        if(nodes[i].isPinned){
+            //nodes[i].isPinned = true;
+            nodes[i].position.x = xmouse;
+            nodes[i].position.y = world.scrHeight-ymouse;
         }
     }
 
-    for (int i = 1; i < points.size(); i++) {
-        int size = points[i].scale * 4;
-        bool collisionX = points[i].position.x + size >= xmouse && 
-                        xmouse + size >= points[i].position.x;
-        bool collisionY = points[i].position.y + size >= ymouse && 
-                        xmouse + size >= points[i].position.y;
-        bool mouseCollides = collisionX && collisionY;
 
-        if(mouseCollides) {
-            points[i].mesh.color = collideColor;
-            if(mouseDown) {
-                points[i].isPinned = true;
-                points[i].position.x = xmouse;
-                points[i].position.y = ymouse;
-
-            }
-        } else if (points[i].mesh.color.x != 1.0f && points[i].mesh.color.x != 1.0f && points[i].mesh.color.x != 1.0f) {
-            points[i].mesh.color = {1.0f, 1.0f, 1.0f};
-            points[i].isPinned = false;
-        }
-    }
-
+   
 }

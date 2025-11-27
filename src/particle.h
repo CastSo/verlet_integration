@@ -18,7 +18,6 @@ class Particle {
         
         void update_points(float deltaTime);
         void update_nodes(float deltaTime);
-        glm::vec3 reflect_vector(glm::vec3 vector);
 
         bool check_collision(Point p1, Point p2);
         void process_force(Point p1, Point p2, float deltaTime);
@@ -28,6 +27,7 @@ class Particle {
         void clamp_particles(Point& point, float xBaseLen, float yBaseLen);
         void clamp_to_screen(Point& point, float delaTime);
         void satisfy_constraints(Point& p1, Point& p2, float restLength);  
+        bool is_connected(int id1, int id2);
 
        
 

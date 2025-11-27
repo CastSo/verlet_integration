@@ -15,8 +15,8 @@ const unsigned int SCR_HEIGHT = 768;
 float xclicked = 0;
 float yclicked = 0;
 
-bool isClicked;
-bool leftMouseDown;
+bool leftMouseFlag = false;
+
 bool canAddnode = false;
 
 World world;
@@ -78,12 +78,9 @@ void process_keys(GLFWwindow *window, Cloth& cloth,  float deltaTime,
 void mouse_callback(GLFWwindow* window, int button, int action, int mods){
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         
-        isClicked = true;
-        leftMouseDown = true;
-    } else {
-        isClicked = false;
-        leftMouseDown = false;
-    }
+        leftMouseFlag = !leftMouseFlag;
+    } 
+
 
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
         canAddnode = !canAddnode;
@@ -183,24 +180,24 @@ int main() {
 
     float lastFrame = glfwGetTime();
     float currentFrame;
-    float deltaTime;
+    float deltaTime = 0;
     while(!glfwWindowShouldClose(window))
     {
         double xCursorPos, yCursorPos;
         glfwGetCursorPos(window, &xCursorPos, &yCursorPos);
 
         nodes[0].position.x = (double)xCursorPos;
-        nodes[0].position.y = (double)yCursorPos;
+        nodes[0].position.y = world.scrHeight-(double)yCursorPos;
 
-        if (isClicked && canAddnode){
+        if (leftMouseFlag && canAddnode){
             factory->make_node_spring((double)xCursorPos, (double)yCursorPos);
-            isClicked = false;
+            leftMouseFlag = false;
             
         }
 
         currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
-        lastFrame= currentFrame;
+        lastFrame = currentFrame;
 
         process_keys(window, cloth, deltaTime, factory, points);
 
@@ -208,19 +205,13 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-        // if(!gui->get_clear_cloth()) {
-        //     render->update_cloth(gui->get_show_points(), gui->get_show_sticks());
-        // }
-        if(!canAddnode) {
-            gui->update_input(leftMouseDown);
+        if(leftMouseFlag && !canAddnode) {
+            gui->update_input(leftMouseFlag);
         }
 
         render->update_nodes_springs(canAddnode);
         
         particle->update(deltaTime);
-        
-        //gui->update_imgui();
-
 
         glfwSwapBuffers(window);
         glfwPollEvents();
