@@ -12,9 +12,12 @@ class Factory {
         void make_cloth();
         void make_points();
         Mesh make_stick_instance();
-        void make_node_spring(float xpos, float ypos);
-        Point make_node(float xpos, float ypos, int scale, glm::vec3 color, int mass, glm::vec3 force);
 
+        Point make_node(float xpos, float ypos, int scale, glm::vec3 color, int mass, glm::vec3 force);
+        void connect_node(int fromNode, int toNode);
+
+        void add_box_body(float xpos, float ypos);
+        void add_node(float xpos, float ypos);
     private:
         int pointLength;
         int betweenDistance;

@@ -39,15 +39,26 @@ void Render::update_cloth(bool showPoints, bool showSticks) {
 
 }
 
-void Render::update_nodes_springs(bool canAddnode) {
-    if(canAddnode) {
-        //First node used as preview
-        float xn = normalize_xposition(nodes[0].position.x, 1, world.scrWidth);
-        float yn = normalize_yposition(nodes[0].position.y, 1, world.scrHeight);
-        float zn = 0.1f;
-        render_point(nodes[0], xn, yn, zn);
-    }
+void Render::update_preview_node() {
+    float xn = normalize_xposition(nodes[0].position.x, 1, world.scrWidth);
+    float yn = normalize_yposition(nodes[0].position.y, 1, world.scrHeight);
+    float zn = 0.1f;
+    render_point(nodes[0], xn, yn, zn);
+}
+
+void Render::update_preview_spring(int activeNodeID) {
+    glm::vec3 posStart = nodes[0].position;
+    glm::vec3 posEnd = nodes[activeNodeID].position;
+    float xnStartPt = normalize_xposition(posStart.x, 1, world.scrWidth);
+    float ynStartPt = normalize_yposition(posStart.y, 1, world.scrHeight);
+    float xnEndPt = normalize_xposition(posEnd.x, 1, world.scrWidth);
+    float ynEndPt = normalize_yposition(posEnd.y, 1, world.scrHeight);
     
+    render_stick(spring, xnStartPt, ynStartPt, xnEndPt, ynEndPt);
+}
+
+void Render::update_nodes_springs() {
+
     for (int i = 1; i < graph.size(); i++) {
         float xn = normalize_xposition(nodes[i].position.x, 1, world.scrWidth);
         float yn = normalize_yposition(nodes[i].position.y, 1, world.scrHeight);

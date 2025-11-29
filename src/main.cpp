@@ -15,9 +15,10 @@ const unsigned int SCR_HEIGHT = 768;
 float xclicked = 0;
 float yclicked = 0;
 
-bool leftMouseFlag = false;
+bool leftMouseFlag;
+bool rightMouseFlag;
 
-bool canAddnode = false;
+bool particleFlag;
 
 World world;
 
@@ -47,31 +48,16 @@ void change_point_location(Cloth& cloth, int x, int y, std::vector<Point>& point
     }
 }
 
-void process_keys(GLFWwindow *window, Cloth& cloth,  float deltaTime,
-         Factory* factory, std::vector<Point>& points)
+void process_keys(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){   
         glfwSetWindowShouldClose(window, true);
    }
-   if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
-        points.clear();
-        factory->make_points();
-   }
 
-    int move = 6;
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        change_point_location(cloth, 0, -move, points);
+   if(glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+        particleFlag = !particleFlag;
    }
-   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        change_point_location(cloth, 0, move, points);
-   }
-   if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        change_point_location(cloth,-move, 0, points);
-   }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        change_point_location(cloth, move, 0, points);
-   }
+   
 
 }
 
@@ -83,8 +69,18 @@ void mouse_callback(GLFWwindow* window, int button, int action, int mods){
 
 
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-        canAddnode = !canAddnode;
+        rightMouseFlag = !rightMouseFlag;
     }
+}
+
+
+bool is_connected(std::vector<std::vector<int>> graph, int toNode, int fromNode) {
+    for (int i = 0; i < graph[toNode].size(); i++) {
+        if(toNode == fromNode)
+            return true;
+    }
+
+    return false;
 }
 
 
@@ -189,8 +185,10 @@ int main() {
         nodes[0].position.x = (double)xCursorPos;
         nodes[0].position.y = world.scrHeight-(double)yCursorPos;
 
-        if (leftMouseFlag && canAddnode){
-            factory->make_node_spring((double)xCursorPos, (double)yCursorPos);
+
+
+        if (leftMouseFlag && rightMouseFlag){
+            factory->add_node((double)xCursorPos, world.scrHeight-(double)yCursorPos);
             leftMouseFlag = false;
             
         }
@@ -199,19 +197,52 @@ int main() {
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        process_keys(window, cloth, deltaTime, factory, points);
+        process_keys(window);
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        int fromNodeID = gui->get_from_nodeID();
+        int toNodeID = gui->get_to_nodeID();
+        if(leftMouseFlag && !rightMouseFlag) {
+           
+            if(leftMouseFlag){
+                nodes[0].mesh.color = {0.0f, 1.0f, 0.0f};
+                render->update_preview_node();
+                
+                if(fromNodeID != -1 && toNodeID != -1 && fromNodeID != toNodeID && 
+                    !is_connected(graph, toNodeID, fromNodeID))
+                {
+                    std::cout << "connected" << std::endl;
+                    factory->connect_node(fromNodeID, toNodeID);
+                    gui->set_from_nodeID(-1);
+                    gui->set_to_nodeID(-1);
 
-        if(leftMouseFlag && !canAddnode) {
-            gui->update_input(leftMouseFlag);
+                }
+            }
+            gui->update_input(leftMouseFlag, rightMouseFlag);
         }
 
-        render->update_nodes_springs(canAddnode);
+        if (rightMouseFlag) {
+            nodes[0].mesh.color = {1.0f, 0.0f, 0.0f};
+            render->update_preview_node();
+            gui->update_input(leftMouseFlag, rightMouseFlag);
+        } 
         
-        particle->update(deltaTime);
+
+        if(fromNodeID != -1)
+                render->update_preview_spring(fromNodeID);
+        
+        render->update_nodes_springs();
+        
+        if(particleFlag)
+        {    
+            particle->update(deltaTime);
+            particleFlag = true;
+        } else {
+            particleFlag = false;
+        }
+            
 
         glfwSwapBuffers(window);
         glfwPollEvents();

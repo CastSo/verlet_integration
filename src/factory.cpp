@@ -29,6 +29,22 @@ void Factory::make_cloth() {
     
 }
 
+void Factory::connect_node(int fromNode, int toNode) {
+    graph[fromNode].push_back(toNode);
+    graph[toNode].push_back(fromNode); 
+
+}
+
+void Factory::add_node(float xpos, float ypos) {
+    float mass = 10000.0f;
+    Point node = make_node(xpos, ypos, 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 0.0f, 0.0f});
+    node.isPinned = false;
+
+    nodes.push_back(node);
+    graph.push_back({});
+
+}
+
 Point Factory::make_node(float xpos, float ypos, int scale, glm::vec3 color, int mass, glm::vec3 force) {
     Mesh nodeMesh = make_point_instance();
     Point node;
@@ -42,11 +58,13 @@ Point Factory::make_node(float xpos, float ypos, int scale, glm::vec3 color, int
 
     node.position.x = xpos;
     node.position.y = ypos;
+
+    node.isPinned = false;
     
     return node;
 }
 
-void Factory::make_node_spring(float xpos, float ypos) {
+void Factory::add_box_body(float xpos, float ypos) {
     float mass = 10000.0f;
     Point node1 = make_node(xpos, ypos, 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 1.0f, 0.0f});
     Point node2 = make_node(xpos, ypos+1, 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 1.0f, 0.0f});
@@ -56,7 +74,7 @@ void Factory::make_node_spring(float xpos, float ypos) {
     nodes.push_back(node1);
     nodes.push_back(node2);
     nodes.push_back(node3);
-    nodes.push_back(node4);
+    nodes.push_back(node4); 
 
     int id1 = nodes.size()-4;
     int id2 = nodes.size()-3;

@@ -11,6 +11,8 @@ Gui::Gui(GLFWwindow *window, World& world, Cloth& cloth, std::vector<Point>& poi
         showPoints = true;
         showSticks = true;
         clearCloth = true;
+        fromNodeID = -1;
+        toNodeID = -1;
 }
 
 Gui::~Gui(){
@@ -35,8 +37,8 @@ void Gui::update_imgui(){
 
 }
 
-void Gui::update_input(bool mouseDown) {
-    detect_mouse(mouseDown);
+void Gui::update_input(bool leftMouseFlag, bool rightMouseFlag) {
+    detect_mouse(leftMouseFlag, rightMouseFlag);
 }
 
 
@@ -52,7 +54,25 @@ bool Gui::get_clear_cloth() {
     return clearCloth;
 }
 
-void Gui::detect_mouse(bool mouseDown) {
+
+int Gui::get_from_nodeID() {
+    return fromNodeID;
+}
+
+int Gui::get_to_nodeID() {
+    return toNodeID;
+}
+
+void Gui::set_from_nodeID(int id) {
+    fromNodeID = id;
+}
+
+
+void Gui::set_to_nodeID(int id) {
+    toNodeID = id;
+}
+
+void Gui::detect_mouse(bool leftMouseFlag, bool rightMouseFlag) {
     double xmouse, ymouse;
     glfwGetCursorPos(window, &xmouse, &ymouse);
     glm::vec3 collideColor = {0.0f, 1.0f, 0.0f};
@@ -66,23 +86,33 @@ void Gui::detect_mouse(bool mouseDown) {
 
         if(mouseCollides) {
             
-            if(mouseDown) {
+            if(leftMouseFlag) {
                 nodes[i].mesh.color = collideColor;
                 nodes[i].isPinned = true; 
-            } 
+                fromNodeID = i;
+            } else {
+                toNodeID = i;
+            }
 
+            if(rightMouseFlag) {
+                nodes[i].mesh.color = collideColor;
+                nodes[i].isPinned = true; 
+                fromNodeID = i;
+            } else {
+                fromNodeID = i;
+            }
             
         } else if (nodes[i].mesh.color.x != 1.0f && nodes[i].mesh.color.x != 1.0f && nodes[i].mesh.color.x != 1.0f) {
             nodes[i].isPinned = false; 
             nodes[i].mesh.color = {1.0f, 1.0f, 1.0f};
-        }
+        } 
         if(nodes[i].isPinned){
-            //nodes[i].isPinned = true;
+            nodes[i].isPinned = true;
             nodes[i].position.x = xmouse;
             nodes[i].position.y = world.scrHeight-ymouse;
         }
     }
-
+    
 
    
 }

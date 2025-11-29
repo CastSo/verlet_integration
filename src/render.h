@@ -11,7 +11,9 @@ class Render {
             std::vector<Point>& nodes, Stick& spring); 
         ~Render();
         void update_cloth(bool showPoints, bool showSticks);
-        void update_nodes_springs(bool canAddnode);
+        void update_nodes_springs();
+        void update_preview_node();
+        void update_preview_spring(int activeNodeID);
     private:
         World& world;
         Cloth& cloth;

@@ -56,16 +56,16 @@ void Particle::update_nodes(float deltaTime) {
     }
     
     for (int i = 1; i < nodes.size(); i++) {
-        Point& b1 = nodes[i];
+        Point& n1 = nodes[i];
         for (int j = i + 2; j < nodes.size(); j++) {
             if(i == j) {
                 continue;
             }
-            Point& b2 = nodes[j];
+            Point& n2 = nodes[j];
 
-            bool isCollided = check_collision(b1, b2); 
+            bool isCollided = check_collision(n1, n2); 
             if(isCollided) {
-                satisfy_constraints(b1, b2, (b1.scale*6));
+                satisfy_constraints(n1, n2, (n1.scale*6));
             }
         }
     }
@@ -78,6 +78,7 @@ void Particle::update_nodes(float deltaTime) {
             int currNode = graph[i][j];
 
             Point& n2 = nodes[currNode];
+
             if(currNode < i)
             {    
                 clamp_particles(n2, (6*n2.scale), (6*n2.scale));
@@ -194,11 +195,10 @@ void Particle::satisfy_constraints(Point& p1, Point& p2, float restLength) {
         float invmass2 = 1/p2.mass;
         float diff = (restLength - deltaLength) /  ((deltaLength)*(invmass1+invmass2));  
 
-        float stiffness = 0.5f;
+        float stiffness = 0.0f;
 
         if(!p1.isPinned)
         {   
-
             p1.position -=  (1.f - stiffness) *  invmass1 * delta * diff;
         }
         if(!p2.isPinned)
@@ -209,7 +209,7 @@ void Particle::satisfy_constraints(Point& p1, Point& p2, float restLength) {
 
 float Particle::process_verlet(float deltaTime, float position, float prevPosition, float force, float mass) {
     float acceleration = force/mass;
-    float damp = 0.9f;
+    float damp = .9f;
     //(dt*dt) should be smaller than 1/k
     float newPosition =  (2 * position - prevPosition) * damp +  acceleration * (deltaTime * deltaTime);
     
