@@ -8,7 +8,8 @@ class Particle {
         ~Particle();
         void update(float deltaTime);
         void check_all_collisions();
-
+        bool is_collided(Point p1, Point p2);
+        
     private:
         World& world;
         Cloth& cloth;
@@ -19,7 +20,7 @@ class Particle {
         void update_points(float deltaTime);
         void update_nodes(float deltaTime);
 
-        bool check_collision(Point p1, Point p2);
+        
         void process_force(Point p1, Point p2, float deltaTime);
         void process_collision(Point p1, Point p2, float deltaTime);
 

@@ -37,8 +37,8 @@ void Gui::update_imgui(){
 
 }
 
-void Gui::update_input(bool leftMouseFlag, bool rightMouseFlag) {
-    detect_mouse(leftMouseFlag, rightMouseFlag);
+void Gui::update_input(bool leftMouseFlag, bool rightMouseFlag, bool particleFlag) {
+    detect_mouse(leftMouseFlag, rightMouseFlag, particleFlag);
 }
 
 
@@ -72,7 +72,30 @@ void Gui::set_to_nodeID(int id) {
     toNodeID = id;
 }
 
-void Gui::detect_mouse(bool leftMouseFlag, bool rightMouseFlag) {
+int Gui::find_mouse_collision() {
+    int nodeID = -1;
+
+    double xmouse, ymouse;
+    glfwGetCursorPos(window, &xmouse, &ymouse);
+
+    for (int i = 1; i < nodes.size(); i++) {
+        int size = 4*nodes[i].scale;
+        bool collisionX = nodes[i].position.x + size >= xmouse && 
+                        xmouse + size >= nodes[i].position.x;
+        bool collisionY = nodes[i].position.y + size >= (world.scrHeight-ymouse) && 
+                        (world.scrHeight-ymouse) + size  >= nodes[i].position.y;
+        bool mouseCollides = collisionX && collisionY;
+
+        if(mouseCollides){
+            nodeID = i;
+            break;
+        }
+    }
+
+    return nodeID;
+}
+
+void Gui::detect_mouse(bool leftMouseFlag, bool rightMouseFlag, bool particleFlag) {
     double xmouse, ymouse;
     glfwGetCursorPos(window, &xmouse, &ymouse);
     glm::vec3 collideColor = {0.0f, 1.0f, 0.0f};
@@ -86,27 +109,25 @@ void Gui::detect_mouse(bool leftMouseFlag, bool rightMouseFlag) {
 
         if(mouseCollides) {
             
-            if(leftMouseFlag) {
+            if(leftMouseFlag && !rightMouseFlag) {
                 nodes[i].mesh.color = collideColor;
-                nodes[i].isPinned = true; 
                 fromNodeID = i;
-            } else {
+            } else if (!leftMouseFlag &&  !rightMouseFlag){
                 toNodeID = i;
+                
             }
 
-            if(rightMouseFlag) {
-                nodes[i].mesh.color = collideColor;
-                nodes[i].isPinned = true; 
-                fromNodeID = i;
-            } else {
-                fromNodeID = i;
-            }
+
+            nodes[i].mesh.color = collideColor;
             
-        } else if (nodes[i].mesh.color.x != 1.0f && nodes[i].mesh.color.x != 1.0f && nodes[i].mesh.color.x != 1.0f) {
+            nodes[i].isPinned = true;
+        } else if ((nodes[i].mesh.color.x != 1.0f && nodes[i].mesh.color.x != 1.0f && nodes[i].mesh.color.x != 1.0f) ) {
             nodes[i].isPinned = false; 
-            nodes[i].mesh.color = {1.0f, 1.0f, 1.0f};
+            if(fromNodeID != i)
+                nodes[i].mesh.color = {1.0f, 1.0f, 1.0f};
         } 
-        if(nodes[i].isPinned){
+
+        if(nodes[i].isPinned && !rightMouseFlag && particleFlag){
             nodes[i].isPinned = true;
             nodes[i].position.x = xmouse;
             nodes[i].position.y = world.scrHeight-ymouse;

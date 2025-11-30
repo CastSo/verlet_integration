@@ -9,7 +9,9 @@ class Gui {
             std::vector<Stick>& sticks, std::vector<Point>& nodes);
         ~Gui();
         void update_imgui();
-        void update_input(bool leftMouseFlag, bool rightMouseFlag);
+        void update_input(bool leftMouseFlag, bool rightMouseFlag, bool particleFlag);
+
+        int find_mouse_collision();
 
         bool get_show_sticks();
         bool get_show_points();
@@ -34,5 +36,5 @@ class Gui {
         std::vector<Stick>& sticks;
         std::vector<Point>& nodes;
 
-        void detect_mouse(bool leftMouseFlag, bool rightMouseFlag);
+        void detect_mouse(bool leftMouseFlag, bool rightMouseFlag, bool particleFlag);
 };

@@ -33,6 +33,8 @@ void Factory::connect_node(int fromNode, int toNode) {
     graph[fromNode].push_back(toNode);
     graph[toNode].push_back(fromNode); 
 
+    
+
 }
 
 void Factory::add_node(float xpos, float ypos) {

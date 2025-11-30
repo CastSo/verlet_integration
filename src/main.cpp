@@ -57,6 +57,7 @@ void process_keys(GLFWwindow *window)
    if(glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
         particleFlag = !particleFlag;
    }
+
    
 
 }
@@ -70,6 +71,7 @@ void mouse_callback(GLFWwindow* window, int button, int action, int mods){
 
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
         rightMouseFlag = !rightMouseFlag;
+        leftMouseFlag = false;
     }
 }
 
@@ -185,18 +187,6 @@ int main() {
         nodes[0].position.x = (double)xCursorPos;
         nodes[0].position.y = world.scrHeight-(double)yCursorPos;
 
-
-
-        if (leftMouseFlag && rightMouseFlag){
-            factory->add_node((double)xCursorPos, world.scrHeight-(double)yCursorPos);
-            leftMouseFlag = false;
-            
-        }
-
-        currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-
         process_keys(window);
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -204,44 +194,59 @@ int main() {
 
         int fromNodeID = gui->get_from_nodeID();
         int toNodeID = gui->get_to_nodeID();
-        if(leftMouseFlag && !rightMouseFlag) {
-           
-            if(leftMouseFlag){
-                nodes[0].mesh.color = {0.0f, 1.0f, 0.0f};
-                render->update_preview_node();
-                
-                if(fromNodeID != -1 && toNodeID != -1 && fromNodeID != toNodeID && 
-                    !is_connected(graph, toNodeID, fromNodeID))
-                {
-                    std::cout << "connected" << std::endl;
-                    factory->connect_node(fromNodeID, toNodeID);
-                    gui->set_from_nodeID(-1);
-                    gui->set_to_nodeID(-1);
 
-                }
+        //Ensures no overlapping when placed
+        if (leftMouseFlag && rightMouseFlag && gui->find_mouse_collision() == -1){
+            leftMouseFlag = false;
+            
+            factory->add_node((double)xCursorPos, world.scrHeight-(double)yCursorPos);
+        }
+        
+        currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
+
+        if(!rightMouseFlag) {
+            nodes[0].mesh.color = {0.0f, 0.0f, 1.0f};
+            render->update_preview_node();
+            
+            if(fromNodeID != -1)
+                render->update_preview_spring(fromNodeID);
+                
+            if(fromNodeID != -1 && toNodeID != -1 && fromNodeID != toNodeID && 
+                !is_connected(graph, toNodeID, fromNodeID))
+            {
+
+                
+
+                factory->connect_node(fromNodeID, toNodeID);
+                gui->set_from_nodeID(-1);
+                gui->set_to_nodeID(-1);
+
             }
-            gui->update_input(leftMouseFlag, rightMouseFlag);
+        
+            gui->update_input(leftMouseFlag, rightMouseFlag, particleFlag);
         }
 
         if (rightMouseFlag) {
+            //Reset nodes
+            gui->set_from_nodeID(-1);
+            gui->set_to_nodeID(-1);
+
             nodes[0].mesh.color = {1.0f, 0.0f, 0.0f};
             render->update_preview_node();
-            gui->update_input(leftMouseFlag, rightMouseFlag);
+            gui->update_input(leftMouseFlag, rightMouseFlag, particleFlag);
         } 
-        
 
-        if(fromNodeID != -1)
-                render->update_preview_spring(fromNodeID);
         
         render->update_nodes_springs();
         
         if(particleFlag)
         {    
             particle->update(deltaTime);
-            particleFlag = true;
-        } else {
-            particleFlag = false;
-        }
+
+        } 
             
 
         glfwSwapBuffers(window);

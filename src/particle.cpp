@@ -20,7 +20,7 @@ void Particle::update(float deltaTime) {
     update_nodes(deltaTime);
 }
 
-bool Particle::check_collision(Point p1, Point p2) {
+bool Particle::is_collided(Point p1, Point p2) {
     int size = p1.scale;
     int xlen = p1.position.x-p2.position.x;
     int ylen = p1.position.y-p2.position.y;
@@ -30,6 +30,8 @@ bool Particle::check_collision(Point p1, Point p2) {
                     p2.position.y + size >= p1.position.y;
     return collisionX && collisionY;
 }
+
+
 
 bool Particle::is_connected(int id1, int id2) {
     for(int i = 0; i < graph[id1].size(); i++) {
@@ -63,7 +65,7 @@ void Particle::update_nodes(float deltaTime) {
             }
             Point& n2 = nodes[j];
 
-            bool isCollided = check_collision(n1, n2); 
+            bool isCollided = is_collided(n1, n2); 
             if(isCollided) {
                 satisfy_constraints(n1, n2, (n1.scale*6));
             }
