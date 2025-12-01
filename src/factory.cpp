@@ -29,12 +29,39 @@ void Factory::make_cloth() {
     
 }
 
+float Factory::find_max_xpos(std::vector<int> array) {
+    int maxID = 0;
+    for(int i = 0; i < array.size(); i++) {
+        int currID = array[i];
+        if(nodes[currID].position.x > nodes[maxID].position.x){
+            maxID = currID;
+        }
+    }
+
+    return nodes[maxID].position.x;
+}
+
+float Factory::find_max_ypos(std::vector<int> array) {
+    int maxID = 0;
+    for(int i = 0; i < array.size(); i++) {
+        int currID = array[i];
+        if(nodes[currID].position.y > nodes[maxID].position.y){
+            maxID = currID;
+        }
+    }
+
+    return nodes[maxID].position.y;
+}
+
 void Factory::connect_node(int fromNode, int toNode) {
     graph[fromNode].push_back(toNode);
     graph[toNode].push_back(fromNode); 
-
     
+    // nodes[fromNode].constraint.x = std::abs(nodes[fromNode].position.x - find_max_xpos(graph[fromNode]));
+    // nodes[fromNode].constraint.y = std::abs(nodes[fromNode].position.y - find_max_ypos(graph[fromNode]));
 
+    // nodes[toNode].constraint.x = std::abs(nodes[toNode].position.x - find_max_xpos(graph[toNode]));
+    // nodes[toNode].constraint.y = std::abs(nodes[toNode].position.y - find_max_ypos(graph[toNode]));
 }
 
 void Factory::add_node(float xpos, float ypos) {
@@ -60,6 +87,8 @@ Point Factory::make_node(float xpos, float ypos, int scale, glm::vec3 color, int
 
     node.position.x = xpos;
     node.position.y = ypos;
+    node.constraint.x = 0.0f;
+    node.constraint.y = 0.0f;
 
     node.isPinned = false;
     

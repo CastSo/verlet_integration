@@ -30,6 +30,9 @@ class Factory {
         std::vector<Light>& lights;
         std::vector<Point>& nodes;
         Stick& spring;
+        
+        float find_max_xpos(std::vector<int> array);
+        float find_max_ypos(std::vector<int> array);
 
         float normalize_position(float position, int cellLength, int scrLength);
         

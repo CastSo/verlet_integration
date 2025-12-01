@@ -213,13 +213,9 @@ int main() {
             
             if(fromNodeID != -1)
                 render->update_preview_spring(fromNodeID);
-                
             if(fromNodeID != -1 && toNodeID != -1 && fromNodeID != toNodeID && 
                 !is_connected(graph, toNodeID, fromNodeID))
-            {
-
-                
-
+            {                
                 factory->connect_node(fromNodeID, toNodeID);
                 gui->set_from_nodeID(-1);
                 gui->set_to_nodeID(-1);

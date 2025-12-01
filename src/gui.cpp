@@ -79,7 +79,7 @@ int Gui::find_mouse_collision() {
     glfwGetCursorPos(window, &xmouse, &ymouse);
 
     for (int i = 1; i < nodes.size(); i++) {
-        int size = 4*nodes[i].scale;
+        int size = 2*nodes[i].scale;
         bool collisionX = nodes[i].position.x + size >= xmouse && 
                         xmouse + size >= nodes[i].position.x;
         bool collisionY = nodes[i].position.y + size >= (world.scrHeight-ymouse) && 

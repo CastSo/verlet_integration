@@ -9,6 +9,7 @@ class Particle {
         void update(float deltaTime);
         void check_all_collisions();
         bool is_collided(Point p1, Point p2);
+        bool is_collided(Point point, int xBoxStart, int xBoxLen, int yBoxStart, int yBoxLen);
         
     private:
         World& world;
@@ -19,17 +20,19 @@ class Particle {
         
         void update_points(float deltaTime);
         void update_nodes(float deltaTime);
+        void update_springs(float deltaTime);
 
         
         void process_force(Point p1, Point p2, float deltaTime);
         void process_collision(Point p1, Point p2, float deltaTime);
 
-        float process_verlet(float deltaTime, float position, float prevPosition, float force, float mass);
+        float process_verlet(float deltaTime, float position, float prevPosition, float force, float mass, float damp);
         void clamp_particles(Point& point, float xBaseLen, float yBaseLen);
         void clamp_to_screen(Point& point, float delaTime);
         void satisfy_constraints(Point& p1, Point& p2, float restLength);  
         bool is_connected(int id1, int id2);
 
+        bool is_connected_graph(int srcID, int findID);
        
 
 };
