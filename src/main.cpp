@@ -19,6 +19,7 @@ bool leftMouseFlag;
 bool rightMouseFlag;
 
 bool particleFlag;
+bool pinFlag;
 
 World world;
 
@@ -58,11 +59,16 @@ void process_keys(GLFWwindow *window)
         particleFlag = !particleFlag;
    }
 
-   
+   if(glfwGetKey(window,GLFW_KEY_F) == GLFW_PRESS) {
+        pinFlag = !pinFlag;
+   }
 
 }
 
 void mouse_callback(GLFWwindow* window, int button, int action, int mods){
+    if(const auto& io = ImGui::GetIO(); io.WantCaptureMouse) {
+        return;
+    }
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         
         leftMouseFlag = !leftMouseFlag;
@@ -70,7 +76,6 @@ void mouse_callback(GLFWwindow* window, int button, int action, int mods){
 
 
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-        rightMouseFlag = !rightMouseFlag;
         leftMouseFlag = false;
     }
 }
@@ -138,10 +143,7 @@ int main() {
     setup_glfw();
     setup_imgui();
 
-    glEnable(GL_DEPTH_TEST);
-
-
-    
+    glEnable(GL_DEPTH_TEST);   
     
     Cloth cloth;
     std::vector<Point> points;
@@ -153,8 +155,6 @@ int main() {
     std::vector<std::vector<int>> graph;
     //Node 0 is initialized
     graph.push_back({});
-
-
 
     world.scrHeight = SCR_HEIGHT;
     world.scrWidth = SCR_WIDTH;
@@ -196,7 +196,8 @@ int main() {
         int toNodeID = gui->get_to_nodeID();
 
         //Ensures no overlapping when placed
-        if (leftMouseFlag && rightMouseFlag && gui->find_mouse_collision() == -1){
+        //When in add node state
+        if (leftMouseFlag && gui->nodeStateIndex == 0 && gui->find_mouse_collision() == -1){
             leftMouseFlag = false;
             
             factory->add_node((double)xCursorPos, world.scrHeight-(double)yCursorPos);
@@ -206,11 +207,13 @@ int main() {
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        render->update_preview_node();
+        gui->update_input(leftMouseFlag, rightMouseFlag, pinFlag);
 
-        if(!rightMouseFlag) {
+        //When in move state
+        if(gui->nodeStateIndex == 1) {
             nodes[0].mesh.color = {0.0f, 0.0f, 1.0f};
-            render->update_preview_node();
-            
+
             if(fromNodeID != -1)
                 render->update_preview_spring(fromNodeID);
             if(fromNodeID != -1 && toNodeID != -1 && fromNodeID != toNodeID && 
@@ -221,28 +224,34 @@ int main() {
                 gui->set_to_nodeID(-1);
 
             }
-        
-            gui->update_input(leftMouseFlag, rightMouseFlag, particleFlag);
+           
         }
-
-        if (rightMouseFlag) {
+        //When in add node state
+        if (gui->nodeStateIndex == 0) {
             //Reset nodes
             gui->set_from_nodeID(-1);
             gui->set_to_nodeID(-1);
 
-            nodes[0].mesh.color = {1.0f, 0.0f, 0.0f};
-            render->update_preview_node();
-            gui->update_input(leftMouseFlag, rightMouseFlag, particleFlag);
+            if(gui->particleOn)
+                nodes[0].mesh.color = {1.0f, 1.0f, 1.0f};
+            else
+                nodes[0].mesh.color = {0.7f, 0.2f, 0.1f};
+            
         } 
 
-        
         render->update_nodes_springs();
         
-        if(particleFlag)
+        if(gui->particleOn)
         {    
             particle->update(deltaTime);
-
+            for(int i = 1; i < nodes.size(); i++) {
+                nodes[i].mesh.color = {1.0f, 1.0f, 1.0f};
+            }
+            
         } 
+
+
+        gui->update_imgui();
             
 
         glfwSwapBuffers(window);

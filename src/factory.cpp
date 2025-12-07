@@ -56,17 +56,17 @@ float Factory::find_max_ypos(std::vector<int> array) {
 void Factory::connect_node(int fromNode, int toNode) {
     graph[fromNode].push_back(toNode);
     graph[toNode].push_back(fromNode); 
-    
-    // nodes[fromNode].constraint.x = std::abs(nodes[fromNode].position.x - find_max_xpos(graph[fromNode]));
-    // nodes[fromNode].constraint.y = std::abs(nodes[fromNode].position.y - find_max_ypos(graph[fromNode]));
 
-    // nodes[toNode].constraint.x = std::abs(nodes[toNode].position.x - find_max_xpos(graph[toNode]));
-    // nodes[toNode].constraint.y = std::abs(nodes[toNode].position.y - find_max_ypos(graph[toNode]));
+    nodes[fromNode].constraint.x = std::abs(nodes[fromNode].position.x - find_max_xpos(graph[fromNode]));
+    nodes[fromNode].constraint.y = std::abs(nodes[fromNode].position.y - find_max_ypos(graph[fromNode]));
+
+    nodes[toNode].constraint.x = std::abs(nodes[toNode].position.x - find_max_xpos(graph[toNode]));
+    nodes[toNode].constraint.y = std::abs(nodes[toNode].position.y - find_max_ypos(graph[toNode]));
 }
 
 void Factory::add_node(float xpos, float ypos) {
     float mass = 10000.0f;
-    Point node = make_node(xpos, ypos, 16, {1.0f, 1.0f, 1.0f}, mass, {0.0f, 0.0f, 0.0f});
+    Point node = make_node(xpos, ypos, 16, {0.7f, 0.2f, 0.1f}, mass, {0.0f, 0.5f, 0.0f});
     node.isPinned = false;
 
     nodes.push_back(node);

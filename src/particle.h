@@ -10,6 +10,8 @@ class Particle {
         void check_all_collisions();
         bool is_collided(Point p1, Point p2);
         bool is_collided(Point point, int xBoxStart, int xBoxLen, int yBoxStart, int yBoxLen);
+        bool is_collided(int xBoxStart1, int xBoxLen1, int yBoxStart1, int yBoxLen1,
+                         int xBoxStart2, int xBoxLen2, int yBoxStart2, int yBoxLen2);
         
     private:
         World& world;
