@@ -111,6 +111,7 @@ void Gui::detect_mouse(bool leftMouseFlag, bool rightMouseFlag, bool pinFlag) {
     glm::vec3 collideColor = {0.0f, 1.0f, 0.0f};
     glm::vec3 particleOnColor = {1.0f, 1.0f, 1.0f};
     glm::vec3 particleOffColor = {0.7f, 0.2f, 0.1f};
+    glm::vec3 pinColor = {1.0f, 1.0f, 0.0f};
     for (int i = 1; i < nodes.size(); i++) {
         int size = 2*nodes[i].scale;
         bool collisionX = nodes[i].position.x + size >= xmouse && 
@@ -130,22 +131,24 @@ void Gui::detect_mouse(bool leftMouseFlag, bool rightMouseFlag, bool pinFlag) {
                
             }
 
-            if(leftMouseFlag && nodeStateIndex == 2) {
-                
-                nodes[i].isPinned = !nodes[i].isPinned;
-            } 
-            
-           if(nodes[i].isPinned && !leftMouseFlag && nodeStateIndex == 2){
-                nodes[i].isPinned = true;
-                nodes[i].position.x = xmouse;
-                nodes[i].position.y = world.scrHeight-ymouse;
+            if (nodeStateIndex == 2) {
+                nodes[0].mesh.color = pinColor;
+                if(leftMouseFlag) {
+                    nodes[i].isPinned = !nodes[i].isPinned;
+                }else if (nodes[i].isPinned && !leftMouseFlag) {
+                    nodes[i].isPinned = true;
+                    nodes[i].position.x = xmouse;
+                    nodes[i].position.y = world.scrHeight-ymouse;
+                }
             }
+
+
         } 
         if(nodes[i].isPinned) {
             nodes[i].mesh.color = {1.0f, 1.0f, 0.0f};
-        } else if ( (nodes[i].mesh.color.x == 0.0f && nodes[i].mesh.color.y == 1.0f && nodes[i].mesh.color.z == 0.0f) ||
-            nodes[i].mesh.color == particleOnColor || nodes[i].mesh.color == particleOffColor ) {
+        } else {
             nodes[i].isPinned = false; 
+            //Changes node back to default color if not getting connected
             if(fromNodeID != i )
             {   
                 if(particleOn) 

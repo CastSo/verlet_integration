@@ -156,10 +156,13 @@ void Particle::update_nodes(float deltaTime) {
 
 void Particle::update_springs(float deltaTime) {
     for (int i = 1; i < graph.size(); i++) {
+        if(nodes[i].isPinned)
+            continue;
         Point& n1 = nodes[i];
         for (int j = 0; j < graph[i].size(); j++) {
 
-            if(i > j)
+            //Skips repeating nodes
+            if(i > graph[i][j] || nodes[graph[i][j]].isPinned)
                 continue;
             
             Point& n2 = nodes[graph[i][j]];
@@ -193,52 +196,52 @@ void Particle::update_springs(float deltaTime) {
             float xBoxEndN = xBoxStartN + xBoxLenN;
           
 
-            for(int n = 1; n < nodes.size(); n++) {
-                Point& currNode = nodes[n];
-                //Ignores collision with start and end nodes, also collision with nodes that are part of a connected graph
-                if(n == i || n == graph[i][j] || is_connected_graph(n, i) || is_connected_graph(n, graph[i][j]))
-                    continue;
+            // for(int n = 1; n < nodes.size(); n++) {
+            //     Point& currNode = nodes[n];
+            //     //Ignores collision with start and end nodes, also collision with nodes that are part of a connected graph
+            //     if(n == i || n == graph[i][j] || is_connected_graph(n, i) || is_connected_graph(n, graph[i][j]))
+            //         continue;
 
-                bool isCollided = is_collided(currNode, xBoxStartN, xBoxLenN, yBoxStartN, yBoxLenN);
+            //     bool isCollided = is_collided(currNode, xBoxStartN, xBoxLenN, yBoxStartN, yBoxLenN);
                 
-                if(isCollided) {
-                    //std::cout << "colllided with stick" << std::endl;
-                    float yNodeStart = currNode.position.y - currNode.scale;
-                    float yNodeEnd = currNode.position.y + currNode.scale;
-                    float xNodeStart = currNode.position.x - currNode.scale ;
-                    float xNodeEnd = currNode.position.x + currNode.scale;
+            //     if(isCollided) {
+            //         //std::cout << "colllided with stick" << std::endl;
+            //         float yNodeStart = currNode.position.y - currNode.scale;
+            //         float yNodeEnd = currNode.position.y + currNode.scale;
+            //         float xNodeStart = currNode.position.x - currNode.scale ;
+            //         float xNodeEnd = currNode.position.x + currNode.scale;
 
-                    if(yBoxEndN > yNodeEnd)
-                    {    
-                        currNode.position.y = yBoxStartN;
-                        currNode.prevPosition.y = process_verlet(deltaTime, currNode.position.y, currNode.prevPosition.y, currNode.force.y, currNode.mass, .9f);
-                    }else {    
-                        currNode.position.y = yBoxEndN;
-                        currNode.prevPosition.y = process_verlet(deltaTime, currNode.position.y, currNode.prevPosition.y, currNode.force.y, currNode.mass, .9f);
-                    }
+            //         if(yBoxEndN > yNodeEnd)
+            //         {    
+            //             currNode.position.y = yBoxStartN;
+            //             currNode.prevPosition.y = process_verlet(deltaTime, currNode.position.y, currNode.prevPosition.y, currNode.force.y, currNode.mass, .9f);
+            //         }else {    
+            //             currNode.position.y = yBoxEndN;
+            //             currNode.prevPosition.y = process_verlet(deltaTime, currNode.position.y, currNode.prevPosition.y, currNode.force.y, currNode.mass, .9f);
+            //         }
                         
                     
-                    if(xBoxEndN > xNodeEnd)
-                    {    
-                        currNode.position.x = xBoxStartN;
-                        //currNode.prevPosition.x = process_verlet(deltaTime, currNode.position.x, currNode.prevPosition.x, currNode.force.x, currNode.mass, .9f);
+            //         if(xBoxEndN > xNodeEnd)
+            //         {    
+            //             currNode.position.x = xBoxStartN;
+            //             //currNode.prevPosition.x = process_verlet(deltaTime, currNode.position.x, currNode.prevPosition.x, currNode.force.x, currNode.mass, .9f);
 
-                    }else {   
-                        currNode.position.x = xBoxEndN;
-                        //currNode.prevPosition.x = process_verlet(deltaTime, currNode.position.x, currNode.prevPosition.x, currNode.force.x, currNode.mass, .9f);
-                    }
+            //         }else {   
+            //             currNode.position.x = xBoxEndN;
+            //             //currNode.prevPosition.x = process_verlet(deltaTime, currNode.position.x, currNode.prevPosition.x, currNode.force.x, currNode.mass, .9f);
+            //         }
 
-                }
-            }
+            //     }
+            // }
 
 
-            for (int g = 1; g < graph.size(); g++) {
-                if(i == g || graph[i][j]  == g || is_connected_graph(g, i) || is_connected_graph(g, graph[i][j]))
+            for (int g = i+1; g < graph.size(); g++) {
+                if( is_connected_graph(g, i) || is_connected_graph(g, graph[i][j]) || nodes[g].isPinned) 
                     continue;
                 Point& m1 = nodes[g];
                 for(int c = 0; c < graph[g].size(); c++) {
                     //Skips the values already compare with g and if the box equals the one that it's compared to
-                     if(g >= graph[g][c] || c == graph[i][j] || is_connected_graph(c, i) || is_connected_graph(c, graph[i][j]))
+                     if(g > graph[g][c] ||  is_connected_graph(c, i) || is_connected_graph(g, graph[i][j]) || nodes[graph[g][c]].isPinned)
                         continue;
 
                     Point& m2 = nodes[graph[g][c]];
@@ -273,36 +276,36 @@ void Particle::update_springs(float deltaTime) {
                     bool isCollided = is_collided( xBoxStartN, xBoxLenN, yBoxStartN, yBoxLenN,
                                          xBoxStartM, xBoxLenM, yBoxStartM, yBoxLenM);
                     if(isCollided) {
-                       /// std::cout << "colllided with stick" << std::endl;
+                        //std::cout << "colllided with stick" << std::endl;
 
                         //Moves box1 according to positions between box1 and box2
                         if(yBoxEndN > yBoxEndM)
                         {    
                             //Pushes top most box up 
-                            m1.position.y = yBoxStartN+m1.scale;
-                           // m1.prevPosition.y = process_verlet(deltaTime, m1.position.y, m1.prevPosition.y, m1.force.y, m1.mass, .9f);
-                            m2.position.y = yBoxStartN+m1.scale;
-                           // m2.prevPosition.y = process_verlet(deltaTime, m2.position.y, m2.prevPosition.y, m2.force.y, m2.mass, .9f);
+                            m1.position.y = yBoxStartN;
+                            m1.prevPosition.y = process_verlet(deltaTime, m1.position.y, m1.prevPosition.y, m1.force.y, m1.mass, .9f);
+                            m2.position.y = yBoxStartN;
+                            m2.prevPosition.y = process_verlet(deltaTime, m2.position.y, m2.prevPosition.y, m2.force.y, m2.mass, .75f);
                         }else {    
-                            m1.position.y = yBoxEndN+m1.scale;
-                           // m1.prevPosition.y = process_verlet(deltaTime, m1.position.y, m1.prevPosition.y, m1.force.y, m1.mass, .9f);
-                            m2.position.y = yBoxEndN+m1.scale;
-                           // m2.prevPosition.y = process_verlet(deltaTime, m2.position.y, m2.prevPosition.y, m2.force.y, m2.mass, .9f);
+                            n1.position.y = yBoxStartM;
+                            n1.prevPosition.y = process_verlet(deltaTime, n1.position.y, n1.prevPosition.y, n1.force.y, n1.mass, .9f);
+                            n2.position.y = yBoxStartM;
+                            n2.prevPosition.y = process_verlet(deltaTime, n2.position.y, n2.prevPosition.y, n2.force.y, n2.mass, .75f);
                         }
                             
                         
                         if(xBoxEndN > xBoxEndM)
                         {    
-                            m1.position.x = xBoxStartN+m1.scale;
-                            //m1.prevPosition.x = process_verlet(deltaTime, m1.position.x, m1.prevPosition.x, m1.force.x, m1.mass, .9f);
-                            m2.position.x = xBoxStartN+m1.scale;
-                            //m2.prevPosition.x = process_verlet(deltaTime, m2.position.x, m2.prevPosition.x, m2.force.x, m2.mass, .9f);
+                            m1.position.x = xBoxStartN;
+                            m1.prevPosition.x = process_verlet(deltaTime, m1.position.x, m1.prevPosition.x, m1.force.x, m1.mass, .9f);
+                            m2.position.x = xBoxStartN;
+                            m2.prevPosition.x = process_verlet(deltaTime, m2.position.x, m2.prevPosition.x, m2.force.x, m2.mass, .75f);
 
                         }else {   
-                            m1.position.x = xBoxEndN+m1.scale;
-                           // m1.prevPosition.x = process_verlet(deltaTime, m1.position.x, m1.prevPosition.x, m1.force.x, m1.mass, .9f);
-                            m2.position.x = xBoxEndN+m1.scale;
-                            //m2.prevPosition.x = process_verlet(deltaTime, m2.position.x, m2.prevPosition.x, m2.force.x, m2.mass, .9f);
+                            n1.position.x = xBoxStartM;
+                            n1.prevPosition.x = process_verlet(deltaTime, n1.position.x, n1.prevPosition.x, n1.force.x, n1.mass, .9f);
+                            n2.position.x = xBoxStartM;
+                            n2.prevPosition.x = process_verlet(deltaTime, n2.position.x, n2.prevPosition.x, n2.force.x, n2.mass, .75f);
                         }
 
 

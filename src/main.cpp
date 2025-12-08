@@ -75,9 +75,6 @@ void mouse_callback(GLFWwindow* window, int button, int action, int mods){
     } 
 
 
-    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-        leftMouseFlag = false;
-    }
 }
 
 
@@ -198,7 +195,7 @@ int main() {
         //Ensures no overlapping when placed
         //When in add node state
         if (leftMouseFlag && gui->nodeStateIndex == 0 && gui->find_mouse_collision() == -1){
-            leftMouseFlag = false;
+            
             
             factory->add_node((double)xCursorPos, world.scrHeight-(double)yCursorPos);
         }
@@ -245,13 +242,15 @@ int main() {
         {    
             particle->update(deltaTime);
             for(int i = 1; i < nodes.size(); i++) {
-                nodes[i].mesh.color = {1.0f, 1.0f, 1.0f};
+                glm::vec3 spawnColor = {0.7f, 0.2f, 0.1f};
+                if(nodes[i].mesh.color == spawnColor)
+                    nodes[i].mesh.color = {1.0f, 1.0f, 1.0f};
             }
             
         } 
-
-
+        
         gui->update_imgui();
+        leftMouseFlag = false;
             
 
         glfwSwapBuffers(window);
