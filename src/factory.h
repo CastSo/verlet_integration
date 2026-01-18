@@ -9,7 +9,7 @@ class Factory {
                  std::vector<Stick>& sticks, std::vector<Quad>& quads, std::vector<Light>& lights, 
                 std::vector<Point>& nodes, Stick& spring);
         ~Factory();
-        void make_cloth();
+        void init_body();
         void make_points();
         Mesh make_stick_instance();
 

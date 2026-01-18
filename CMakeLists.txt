@@ -40,7 +40,7 @@ target_link_options(verlet_integration  PRIVATE -fsanitize=address)
 # Set the include directories
 target_include_directories(verlet_integration 
     PRIVATE
-    dependencies          
+    dependencies     
 )
 
 # Link with required libraries

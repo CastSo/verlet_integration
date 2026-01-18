@@ -22,7 +22,7 @@ Factory::~Factory() {
 
 
 
-void Factory::make_cloth() {
+void Factory::init_body() {
     make_points();
     make_sticks();
     make_quads();

@@ -104,35 +104,51 @@ void Particle::update_nodes(float deltaTime) {
         
     }
     
-    // for (int i = 1; i < nodes.size(); i++) {
-    //     Point& n1 = nodes[i];
-    //     for (int j = 1; j < nodes.size(); j++) {
-    //         //Nodes connected to same graph does not collide
-    //         if(i == j || is_connected_graph(i,j)) {
-    //             continue;
-    //         }
-    //         Point& n2 = nodes[j];
+    for (int i = 1; i < nodes.size(); i++) {
+        Point& n1 = nodes[i];
 
-    //         bool isCollided = is_collided(n1, n2); 
-    //         if(isCollided) {
-    //             float yTmpPosition = n1.position.y;
-    //             n1.position.y = process_verlet(deltaTime, n1.position.y, n1.prevPosition.y, n1.force.y, n1.mass, .25f);
-    //             n1.prevPosition.y = yTmpPosition;
+        for (int j = 1; j < nodes.size(); j++) {
+            //Nodes connected to same graph does not collide
+            if(i == j || is_connected_graph(i,j)) {
+                continue;
+            }
+            Point& n2 = nodes[j];
 
-    //             // float xTmpPosition = n1.position.x;
-    //             // n1.position.x = process_verlet(deltaTime, n1.position.x, n1.prevPosition.x, n1.force.x, n1.mass, .9f);
-    //             // n1.prevPosition.x = xTmpPosition;
+            bool isCollided = is_collided(n1, n2); 
+            if(isCollided) {
+                //stay clamp to screen 
+                float xmin = n1.scale*2.0f;
+                float xmax = world.scrWidth - n1.scale*2.0f;
+                float ymin = n1.scale*2.0f;
+                float ymax = world.scrHeight - n1.scale*2.0f;
 
-    //             yTmpPosition = n2.position.y;
-    //             n2.position.y = process_verlet(deltaTime, n2.position.y, n2.prevPosition.y, n2.force.y, n2.mass, .75f);
-    //             n2.prevPosition.y = yTmpPosition;
+                
+                if(n1.position.y <= ymin)
+                {                
+                    n1.position.y = ymin;
+                } 
+                float yTmpPosition = n1.position.y;
+                n1.position.y = process_verlet(deltaTime, n1.position.y, n1.prevPosition.y, -n1.force.y, n1.mass, .25f);
+                n1.prevPosition.y = yTmpPosition;
 
-    //             // xTmpPosition = n2.position.x;
-    //             // n2.position.x = process_verlet(deltaTime, n2.position.x, n2.prevPosition.x, n2.force.x, n2.mass, .9f);
-    //             // n2.prevPosition.x = xTmpPosition;
-    //         }
-    //     }
-    // }
+                float xTmpPosition = n1.position.x;
+                n1.position.x = process_verlet(deltaTime, n1.position.x, n1.prevPosition.x, n1.force.x, n1.mass, .9f);
+                n1.prevPosition.x = xTmpPosition;
+                
+                if(n2.position.y <= ymin)
+                { 
+                   n2.position.y = ymin;
+                }
+                yTmpPosition = n2.position.y;
+                n2.position.y = process_verlet(deltaTime, n2.position.y, n2.prevPosition.y, -n2.force.y, n2.mass, .75f);
+                n2.prevPosition.y = yTmpPosition;
+                
+                xTmpPosition = n2.position.x;
+                n2.position.x = process_verlet(deltaTime, n2.position.x, n2.prevPosition.x, n2.force.x, n2.mass, .9f);
+                n2.prevPosition.x = xTmpPosition;
+            }
+        }
+    }
 
     for (int i = 1; i < graph.size(); i++) {
         Point& n1 = nodes[i];
@@ -166,6 +182,7 @@ void Particle::update_springs(float deltaTime) {
                 continue;
             
             Point& n2 = nodes[graph[i][j]];
+            
             //bool isCollided = is_collided(n1, n2, n1.scale, n1.scale, n2.scale, n2.scale); 
             float xBoxStartN;
             float xBoxLenN;
@@ -195,44 +212,44 @@ void Particle::update_springs(float deltaTime) {
             float yBoxEndN = yBoxStartN + yBoxLenN;
             float xBoxEndN = xBoxStartN + xBoxLenN;
           
+            //Checks if collides with other nodes
+            for(int n = 1; n < nodes.size(); n++) {
+                Point& currNode = nodes[n];
+                //Ignores collision with start and end nodes, also collision with nodes that are part of a connected graph
+                if(i == n || graph[i][j] == n || is_connected_graph(n, i) || is_connected_graph(n, graph[i][j]))
+                    continue;
 
-            // for(int n = 1; n < nodes.size(); n++) {
-            //     Point& currNode = nodes[n];
-            //     //Ignores collision with start and end nodes, also collision with nodes that are part of a connected graph
-            //     if(n == i || n == graph[i][j] || is_connected_graph(n, i) || is_connected_graph(n, graph[i][j]))
-            //         continue;
-
-            //     bool isCollided = is_collided(currNode, xBoxStartN, xBoxLenN, yBoxStartN, yBoxLenN);
+                bool isCollided = is_collided(currNode, xBoxStartN, xBoxLenN, yBoxStartN, yBoxLenN);
                 
-            //     if(isCollided) {
-            //         //std::cout << "colllided with stick" << std::endl;
-            //         float yNodeStart = currNode.position.y - currNode.scale;
-            //         float yNodeEnd = currNode.position.y + currNode.scale;
-            //         float xNodeStart = currNode.position.x - currNode.scale ;
-            //         float xNodeEnd = currNode.position.x + currNode.scale;
+                if(isCollided) {
+                    //std::cout << "colllided with stick" << std::endl;
+                    float yNodeStart = currNode.position.y - currNode.scale;
+                    float yNodeEnd = currNode.position.y + currNode.scale;
+                    float xNodeStart = currNode.position.x - currNode.scale ;
+                    float xNodeEnd = currNode.position.x + currNode.scale;
 
-            //         if(yBoxEndN > yNodeEnd)
-            //         {    
-            //             currNode.position.y = yBoxStartN;
-            //             currNode.prevPosition.y = process_verlet(deltaTime, currNode.position.y, currNode.prevPosition.y, currNode.force.y, currNode.mass, .9f);
-            //         }else {    
-            //             currNode.position.y = yBoxEndN;
-            //             currNode.prevPosition.y = process_verlet(deltaTime, currNode.position.y, currNode.prevPosition.y, currNode.force.y, currNode.mass, .9f);
-            //         }
+                    if(yBoxEndN > yNodeEnd)
+                    {    
+                        currNode.position.y = yBoxStartN;
+                        currNode.prevPosition.y = process_verlet(deltaTime, currNode.position.y, currNode.prevPosition.y, currNode.force.y, currNode.mass, .9f);
+                    }else {    
+                        currNode.position.y = yBoxEndN;
+                        currNode.prevPosition.y = process_verlet(deltaTime, currNode.position.y, currNode.prevPosition.y, currNode.force.y, currNode.mass, .9f);
+                    }
                         
                     
-            //         if(xBoxEndN > xNodeEnd)
-            //         {    
-            //             currNode.position.x = xBoxStartN;
-            //             //currNode.prevPosition.x = process_verlet(deltaTime, currNode.position.x, currNode.prevPosition.x, currNode.force.x, currNode.mass, .9f);
+                    if(xBoxEndN > xNodeEnd)
+                    {    
+                        currNode.position.x = xBoxStartN;
+                        //currNode.prevPosition.x = process_verlet(deltaTime, currNode.position.x, currNode.prevPosition.x, currNode.force.x, currNode.mass, .9f);
 
-            //         }else {   
-            //             currNode.position.x = xBoxEndN;
-            //             //currNode.prevPosition.x = process_verlet(deltaTime, currNode.position.x, currNode.prevPosition.x, currNode.force.x, currNode.mass, .9f);
-            //         }
+                    }else {   
+                        currNode.position.x = xBoxEndN;
+                        //currNode.prevPosition.x = process_verlet(deltaTime, currNode.position.x, currNode.prevPosition.x, currNode.force.x, currNode.mass, .9f);
+                    }
 
-            //     }
-            // }
+                }
+            }
 
 
             for (int g = i+1; g < graph.size(); g++) {

@@ -9,8 +9,9 @@ class Gui {
             std::vector<Stick>& sticks, std::vector<Point>& nodes);
         ~Gui();
         bool particleOn;
-        static const char* nodeStateSelect[4]; 
+        static const char* nodeStateSelect[3]; 
         int nodeStateIndex;
+        bool clearScene;
 
         void update_imgui();
         void update_input(bool leftMouseFlag, bool rightMouseFlag, bool pinFlag);
@@ -30,8 +31,7 @@ class Gui {
         bool showPoints;
         bool showSticks;
         bool clearCloth;
-        
-        
+
 
         int fromNodeID;
         int toNodeID;

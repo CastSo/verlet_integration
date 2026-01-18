@@ -1,6 +1,6 @@
 #include "./gui.h"
 
-const char* Gui::nodeStateSelect[4] = {
+const char* Gui::nodeStateSelect[3] = {
     "Spawn Node",
     "Connect Node",
     "Pin Node"
@@ -18,6 +18,7 @@ Gui::Gui(GLFWwindow *window, World& world, Cloth& cloth, std::vector<Point>& poi
         showSticks = true;
         clearCloth = true;
         particleOn = false;
+        clearScene = false;
         fromNodeID = -1;
         toNodeID = -1;
 
@@ -38,6 +39,10 @@ void Gui::update_imgui(){
     ImGui::Checkbox("Physics On", &particleOn);
     
     ImGui::Combo("Node state", &nodeStateIndex, nodeStateSelect, IM_ARRAYSIZE(nodeStateSelect));
+
+    if(ImGui::Button("Clear scene")) {
+        clearScene = true;
+    }
     ImGui::End();
         
     ImGui::Render();

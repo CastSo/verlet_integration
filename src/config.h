@@ -26,7 +26,7 @@
 #include <thread>
 #include <cmath>
 #include <memory>
-
+#include <algorithm>
 #include <GL/glut.h>
 
 #include <imgui/imgui.h>

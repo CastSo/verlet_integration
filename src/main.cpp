@@ -167,17 +167,32 @@ int main() {
     Particle* particle = new Particle(world, cloth, graph, points, nodes);
     Gui* gui = new Gui(window, world, cloth, points, sticks, nodes);
 
-    factory->make_cloth();
+     factory->init_body();
+    //First node acts as preview
     nodes.push_back(factory->make_node(0.0f, 0.0f, 8, {1.0f, 0.0f, 0.0f}, 100000, {0.0f, 0.5f, 0.0f}));
     spring.mesh = factory->make_stick_instance();
     spring.mesh.color = {1.0f, 1.0f, 1.0f};
-    //std::cout << quads.mesh.VAO << std::endl;
 
     float lastFrame = glfwGetTime();
     float currentFrame;
     float deltaTime = 0;
     while(!glfwWindowShouldClose(window))
     {
+
+        if (gui->clearScene) {
+            points.clear();
+            sticks.clear();
+            nodes.clear();
+            graph.clear();
+            graph.push_back({});
+            factory->init_body();
+            nodes.push_back(factory->make_node(0.0f, 0.0f, 8, {1.0f, 0.0f, 0.0f}, 100000, {0.0f, 0.5f, 0.0f}));
+            spring.mesh = factory->make_stick_instance();
+            spring.mesh.color = {1.0f, 1.0f, 1.0f};
+
+            gui->clearScene = false;
+        }
+
         double xCursorPos, yCursorPos;
         glfwGetCursorPos(window, &xCursorPos, &yCursorPos);
 
@@ -206,6 +221,8 @@ int main() {
 
         render->update_preview_node();
         gui->update_input(leftMouseFlag, rightMouseFlag, pinFlag);
+
+
 
         //When in move state
         if(gui->nodeStateIndex == 1) {
@@ -244,7 +261,7 @@ int main() {
             for(int i = 1; i < nodes.size(); i++) {
                 glm::vec3 spawnColor = {0.7f, 0.2f, 0.1f};
                 if(nodes[i].mesh.color == spawnColor)
-                    nodes[i].mesh.color = {1.0f, 1.0f, 1.0f};
+                    nodes[i].mesh.color = {0.0f, 1.0f, 1.0f};
             }
             
         } 
