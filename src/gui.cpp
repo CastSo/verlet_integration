@@ -150,14 +150,15 @@ void Gui::detect_mouse(bool leftMouseFlag, bool rightMouseFlag, bool pinFlag) {
 
         } 
         if(nodes[i].isPinned) {
-            nodes[i].mesh.color = {1.0f, 1.0f, 0.0f};
+            //nodes[i].mesh.color = {1.0f, 1.0f, 0.0f};
+            nodes[i].mesh.color = nodes[i].mesh.defaultColor;
         } else {
             nodes[i].isPinned = false; 
             //Changes node back to default color if not getting connected
             if(fromNodeID != i )
             {   
                 if(particleOn) 
-                    nodes[i].mesh.color = particleOnColor;
+                    nodes[i].mesh.color = nodes[i].mesh.defaultColor;
                 else
                     nodes[i].mesh.color = particleOffColor;
             }

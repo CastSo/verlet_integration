@@ -9,8 +9,8 @@
 GLFWwindow* window;
 
 
-const unsigned int SCR_WIDTH = 1024;
-const unsigned int SCR_HEIGHT = 768;
+const unsigned int SCR_WIDTH = 1200;
+const unsigned int SCR_HEIGHT = 900;
 
 float xclicked = 0;
 float yclicked = 0;
@@ -139,7 +139,6 @@ void setup_imgui(){
 int main() {
     setup_glfw();
     setup_imgui();
-
     glEnable(GL_DEPTH_TEST);   
     
     Cloth cloth;
@@ -246,8 +245,11 @@ int main() {
             gui->set_from_nodeID(-1);
             gui->set_to_nodeID(-1);
 
-            if(gui->particleOn)
+            if(gui->particleOn){
+
+                //std::cout << rColor << std::endl;
                 nodes[0].mesh.color = {1.0f, 1.0f, 1.0f};
+            }
             else
                 nodes[0].mesh.color = {0.7f, 0.2f, 0.1f};
             

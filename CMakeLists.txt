@@ -20,6 +20,7 @@ set(IMGUI_SOURCES
     dependencies/imgui/imgui_impl_opengl3.cpp
 )
 
+
 add_executable(verlet_integration
   src/config.h
   src/config.cpp
@@ -48,3 +49,5 @@ target_link_libraries(verlet_integration
     glfw
     OpenGL::GL
 )
+
+

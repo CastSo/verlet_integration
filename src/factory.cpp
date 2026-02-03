@@ -67,6 +67,15 @@ void Factory::connect_node(int fromNode, int toNode) {
 void Factory::add_node(float xpos, float ypos) {
     float mass = 10000.0f;
     Point node = make_node(xpos, ypos, 16, {0.7f, 0.2f, 0.1f}, mass, {0.0f, 0.5f, 0.0f});
+
+    srand(time(0));
+    float rColor = ((double)rand() / (float)RAND_MAX);
+    float gColor = ((double)rand() / (float)RAND_MAX);
+    float bColor = ((double)rand() / (float)RAND_MAX);
+    node.mesh.defaultColor = {rColor, gColor, bColor};
+    node.mesh.color = node.mesh.defaultColor;
+    //std::cout << rColor << ", " << gColor << std::endl;
+
     node.isPinned = false;
 
     nodes.push_back(node);
@@ -144,7 +153,7 @@ void Factory::make_points() {
     point.width = point.scale / world.scrWidth;
     point.mesh.color = {1.0f, 1.0f, 1.0f};
     point.mass = 100000;
-    point.force = {5*point.mass, 5*point.mass, 0.0f};
+    point.force = {0.0f, point.mass/2, 0.0f};
 
     int xoffset = 0;
     int yoffset = 0;

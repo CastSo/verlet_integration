@@ -5,6 +5,7 @@ struct Mesh {
 
     unsigned int VAO, VBO, EBO;
     glm::vec3 color;
+    glm::vec3 defaultColor;
     unsigned int normalVBO;
     unsigned int shader;
 

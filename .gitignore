@@ -1,2 +1,4 @@
 build/
+clean.sh
+run.sh
 .vscode/

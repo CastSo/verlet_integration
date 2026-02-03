@@ -1,0 +1,4 @@
+/home/cimex/Projects/Computer_Graphics/verlet_integration/CMakeFiles/verlet_integration.dir
+/home/cimex/Projects/Computer_Graphics/verlet_integration/CMakeFiles/shader.dir
+/home/cimex/Projects/Computer_Graphics/verlet_integration/CMakeFiles/edit_cache.dir
+/home/cimex/Projects/Computer_Graphics/verlet_integration/CMakeFiles/rebuild_cache.dir

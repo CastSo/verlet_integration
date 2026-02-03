@@ -116,6 +116,13 @@ void Particle::update_nodes(float deltaTime) {
 
             bool isCollided = is_collided(n1, n2); 
             if(isCollided) {
+                //Finds node nearer to ground and assign as 1st node
+                if(n1.position.y > n2.position.y) {
+                    Point& tempN = n2;
+                    n2 = n1;
+                    n1 = tempN;
+                }
+
                 //stay clamp to screen 
                 float xmin = n1.scale*2.0f;
                 float xmax = world.scrWidth - n1.scale*2.0f;
@@ -126,26 +133,29 @@ void Particle::update_nodes(float deltaTime) {
                 if(n1.position.y <= ymin)
                 {                
                     n1.position.y = ymin;
+                    continue;
                 } 
-                float yTmpPosition = n1.position.y;
-                n1.position.y = process_verlet(deltaTime, n1.position.y, n1.prevPosition.y, -n1.force.y, n1.mass, .25f);
-                n1.prevPosition.y = yTmpPosition;
 
-                float xTmpPosition = n1.position.x;
-                n1.position.x = process_verlet(deltaTime, n1.position.x, n1.prevPosition.x, n1.force.x, n1.mass, .9f);
-                n1.prevPosition.x = xTmpPosition;
+                float ypos = n1.position.y;
+                n1.position.y += (n1.position.y - n1.prevPosition.y) +  n1.force.y * (deltaTime * deltaTime) / (2*n1.mass);
+                n1.prevPosition.y = ypos;
+
+                // float xpos = n1.position.x;
+                // n1.position.x += (n1.position.x - n1.prevPosition.x) * 0.5 +  n1.force.x * (deltaTime * deltaTime) / (2*n1.mass);
+                // n1.prevPosition.x = xpos;
                 
                 if(n2.position.y <= ymin)
                 { 
                    n2.position.y = ymin;
+                   continue;
                 }
-                yTmpPosition = n2.position.y;
-                n2.position.y = process_verlet(deltaTime, n2.position.y, n2.prevPosition.y, -n2.force.y, n2.mass, .75f);
-                n2.prevPosition.y = yTmpPosition;
+                ypos = n2.position.y;
+                n2.position.y += (n2.position.y - n2.prevPosition.y)  +  (n2.force.y/2) * (deltaTime * deltaTime) / (n2.mass/2);
+                n2.prevPosition.y = ypos;
                 
-                xTmpPosition = n2.position.x;
-                n2.position.x = process_verlet(deltaTime, n2.position.x, n2.prevPosition.x, n2.force.x, n2.mass, .9f);
-                n2.prevPosition.x = xTmpPosition;
+                // xpos = n2.position.x;
+                // n2.position.x += (n2.position.x - n2.prevPosition.x) * 0.5 +  (n2.force.x/4) * (deltaTime * deltaTime) / (n2.mass/4);
+                // n2.prevPosition.x = xpos;
             }
         }
     }
